@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32228.430
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Custom Texture Importer", "Custom Texture Importer\Custom Texture Importer.csproj", "{CCE0BE09-652C-4704-A817-1AD2ACEFE853}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CUE4Parse", "CUE4Parse\CUE4Parse.csproj", "{94B1C9A0-6AE7-4B65-925F-99BB6072D475}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CCE0BE09-652C-4704-A817-1AD2ACEFE853}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCE0BE09-652C-4704-A817-1AD2ACEFE853}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCE0BE09-652C-4704-A817-1AD2ACEFE853}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCE0BE09-652C-4704-A817-1AD2ACEFE853}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94B1C9A0-6AE7-4B65-925F-99BB6072D475}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94B1C9A0-6AE7-4B65-925F-99BB6072D475}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94B1C9A0-6AE7-4B65-925F-99BB6072D475}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94B1C9A0-6AE7-4B65-925F-99BB6072D475}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3C6D9606-856C-451E-8C1B-27D3E265E313}
+	EndGlobalSection
+EndGlobal
