@@ -41,11 +41,13 @@ public class ProgressBar : IDisposable, IProgress<double>
         {
             if (disposed) return;
 
+            Console.ForegroundColor = ConsoleColor.Blue;
             int progressBlockCount = (int)(currentProgress * blockCount);
             int percent = (int)(currentProgress * 100);
             string text = string.Format("[{0}{1}] {2,3}% {3}",
                 new string('#', progressBlockCount), new string('-', blockCount - progressBlockCount), percent, "");
             UpdateText(text);
+            Console.ResetColor();
 
             ResetTimer();
         }

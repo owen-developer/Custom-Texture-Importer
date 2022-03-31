@@ -32,7 +32,7 @@ namespace Custom_Texture_Importer
             void Report()
             {
                 progress.Report((double)j / count);
-                Thread.Sleep(20);
+                Thread.Sleep(50);
                 j++;
             }
             foreach (var (fileExt, path) in from fileExt in fileExts
@@ -56,7 +56,7 @@ namespace Custom_Texture_Importer
                             if (!File.Exists(paritionPath))
                             {
                                 Report();
-                                Thread.Sleep(100);
+                                Thread.Sleep(1000);
                                 break;
                             }
 
@@ -118,6 +118,9 @@ namespace Custom_Texture_Importer
                 }
             }
 
+            progress.Report(1);
+            Program.WriteLineColored(ConsoleColor.Green, $"Finished backing up files.");
+            Thread.Sleep(500);
             progress.Dispose();
         }
     }
