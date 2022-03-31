@@ -56,7 +56,7 @@ namespace Custom_Texture_Importer
                             if (!File.Exists(paritionPath))
                             {
                                 Report();
-                                Thread.Sleep(100);
+                                Thread.Sleep(1000);
                                 break;
                             }
 
