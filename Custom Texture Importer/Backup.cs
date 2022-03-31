@@ -32,7 +32,7 @@ namespace Custom_Texture_Importer
             void Report()
             {
                 progress.Report((double)j / count);
-                Thread.Sleep(20);
+                Thread.Sleep(50);
                 j++;
             }
             foreach (var (fileExt, path) in from fileExt in fileExts
