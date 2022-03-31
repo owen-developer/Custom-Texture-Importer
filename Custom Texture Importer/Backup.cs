@@ -118,6 +118,9 @@ namespace Custom_Texture_Importer
                 }
             }
 
+            progress.Report(1);
+            Program.WriteLineColored(ConsoleColor.Green, $"Finished backing up files.");
+            Thread.Sleep(500);
             progress.Dispose();
         }
     }
