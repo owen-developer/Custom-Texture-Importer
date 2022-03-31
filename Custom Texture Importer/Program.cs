@@ -56,7 +56,7 @@ for (int i = 0; i < chunked.Count; i++)
 }
 
 bw.Close();
-File.WriteAllBytes(Owen.Path.Replace("WindowsClient",FortniteUtil.ConfigData.BackupFileName).Replace(".ucas", ".utoc"), mem.ToArray());
+File.WriteAllBytes(Owen.Path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName).Replace(".ucas", ".utoc"), mem.ToArray());
 mem.Close();
 
 List<byte[]> chunkData()

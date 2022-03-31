@@ -11,6 +11,7 @@ using CUE4Parse.UE4.Readers;
 using CUE4Parse.UE4.Versions;
 using CUE4Parse.Utils;
 using Ionic.Zip;
+using Newtonsoft.Json;
 
 namespace CUE4Parse.FileProvider
 {
@@ -55,8 +56,17 @@ namespace CUE4Parse.FileProvider
             }
         }
 
+        public struct Config
+        {
+            public string BackupFileName;
+        }
+
         private void RegisterFile(string file, Stream[] stream = null!, Func<string, FArchive>? openContainerStreamFunc = null)
         {
+
+            const string config = "config.json";
+            if (file.Contains(JsonConvert.DeserializeObject<Config>(File.ReadAllText(config)).BackupFileName)) return;
+
             var ext = file.SubstringAfterLast('.');
             if (ext.Equals("pak", StringComparison.OrdinalIgnoreCase))
             {
