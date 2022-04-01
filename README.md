@@ -11,4 +11,4 @@ Owen's Custom Texture Importer is the one and only custom texture tool for the l
 Download and extract the zip archive [here](https://github.com/owen-developer/Custom-Texture-Importer/releases/download/1.0/win-x64.zip)
 
 ## License
-[GNU GPL v3.0](https://github.com/owen-developer/Custom-Texture-Importer/blob/master/LICENCE)
+[GNU GPL v3.0](https://github.com/owen-developer/Custom-Texture-Importer/blob/master/LICENSE)
