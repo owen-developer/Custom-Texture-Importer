@@ -1,9 +1,10 @@
 ﻿using CUE4Parse;
-using Custom_Texture_Importer;
-using Custom_Texture_Importer.Compression;
+using Custom_Texture_Importer.Models;
+using Custom_Texture_Importer.Utils;
+using Custom_Texture_Importer.Utils.Libs;
+using Custom_Texture_Importer.Utils.Program;
 using DiscordRPC;
 using Newtonsoft.Json;
-using System.Diagnostics;
 
 namespace Custom_Texture_Importer;
 
@@ -13,77 +14,95 @@ public static class Program
     {
         DiscordRpcClient client = new("958805762455523358");
         client.Initialize();
-        client.SetPresence(new RichPresence()
+        client.SetPresence(new RichPresence
         {
             Details = "Made by @owenonhxd",
             State = "Importing a texture.",
-            Assets = new Assets()
+            Assets = new Assets
             {
                 LargeImageKey = "54129bd57b2f996b25c6759b9833f1e9",
-                LargeImageText = "Custom Texture Importer (Made by Owen)",
+                LargeImageText = "Custom Texture Importer (Made by Owen)"
             }
         });
 
         const string config = "config.json";
-        if (!File.Exists(config)) File.WriteAllText(config, JsonConvert.SerializeObject(FortniteUtil.ConfigData));
-        else FortniteUtil.ConfigData = JsonConvert.DeserializeObject<Config>(File.ReadAllText(config));
+        if (!File.Exists(config))
+            await File.WriteAllTextAsync(config, JsonConvert.SerializeObject(FortniteUtil.ConfigData));
+        else FortniteUtil.ConfigData = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync(config));
 
-        var provider = new Provider()._provider;
+        var provider = new MyFileProvider().Provider;
+        
         while (true)
         {
-            Console.Write("Input the path to the texture's ubulk to replace > ");
-            var texturePath = Console.ReadLine().Replace(".uasset", ".ubulk");
-            if (texturePath is null ||
-                texturePath == string.Empty)
+            Console.Write("Input the path to the texture's ubulk to replace OR input 'exit' to close the tool > ");
+            var texturePath = Console.ReadLine()?.Replace(".uasset", ".ubulk");
+            
+            if (texturePath == "exit")
+                break;
+            
+            if (texturePath is null or "")
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 WriteLineColored(ConsoleColor.Red, "Please input a path");
                 Console.ResetColor();
                 continue;
             }
+
             Owen.IsExporting = true;
-            provider.SaveAsset(texturePath);
+            await provider.SaveAssetAsync(texturePath);
             Console.Write("Input your custom ubulk (must be the same size) > ");
-            var ubulkBytes = File.ReadAllBytes(Console.ReadLine().Replace("\"", string.Empty));
+            var ubulkBytes = await File.ReadAllBytesAsync(Console.ReadLine()?.Replace("\"", string.Empty) ??
+                                                          throw new FileNotFoundException("A file cannot be \"null\""));
             var chunked = ChunkData(ubulkBytes);
 
             await Backup.BackupFile(Owen.Path);
 
-            var bw = new BinaryWriter(File.OpenWrite(Owen.Partition == 0 ? Owen.Path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName).Replace(".utoc", ".ucas") : Owen.Path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName + "_s" + Owen.Partition).Replace(".utoc", ".ucas")));
-            var mem = new MemoryStream(File.Exists(Owen.Path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName)) ? File.ReadAllBytes(Owen.Path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName)) : File.ReadAllBytes(Owen.Path));
-            long tocOffset = Provider.IndexOfSequence(mem.ToArray(), BitConverter.GetBytes((int)Owen.Offsets[0]));
-            long written = 0;
+            var ucasStream = new BinaryWriter(File.OpenWrite(Owen.Partition == 0
+                ? Owen.Path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName).Replace(".utoc", ".ucas")
+                : Owen.Path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName + "_s" + Owen.Partition)
+                    .Replace(".utoc", ".ucas")));
+            var utocStream = new MemoryStream(
+                File.Exists(Owen.Path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName))
+                    ? await File.ReadAllBytesAsync(Owen.Path.Replace("WindowsClient",
+                        FortniteUtil.ConfigData.BackupFileName))
+                    : await File.ReadAllBytesAsync(Owen.Path));
+            var tocOffset =
+                (uint)FileUtil.IndexOfSequence(utocStream.ToArray(), BitConverter.GetBytes((int)Owen.FirstOffset));
+            uint written = 0;
 
             Console.WriteLine();
             WriteLineColored(ConsoleColor.Green, "Processing...");
             var progress = new ProgressBar();
-            for (int i = 0; i < chunked.Count; i++)
+            for (var i = 0; i < chunked.Count; i++)
             {
                 var compressed = Oodle.Compress(chunked[i]);
-                bw.BaseStream.Position = Owen.Offsets[0] + written;
-                var longAsBytes = BitConverter.GetBytes((int)bw.BaseStream.Position);
-                bw.Write(compressed, 0, compressed.Length);
-                written += compressed.Length + 10;
-                mem.Position = tocOffset + i * 12;
-                mem.Write(longAsBytes, 0, longAsBytes.Length);
-                mem.Position += 1;
+
+                ucasStream.BaseStream.Position = Owen.FirstOffset + written;
+                ucasStream.Write(compressed, 0, compressed.Length);
+                written += (uint)compressed.Length + 10;
+
+                utocStream.Position = tocOffset + i * 12;
+                var longAsBytes = BitConverter.GetBytes((int)ucasStream.BaseStream.Position);
+                utocStream.Write(longAsBytes, 0, longAsBytes.Length);
+                utocStream.Position += 1;
+
                 var intAsBytes = BitConverter.GetBytes((ushort)compressed.Length);
-                mem.Write(intAsBytes, 0, intAsBytes.Length);
-                //  mem.Position += 1;
-                //  var int24AsBytes = new UInt24((uint)chunked[i].Length).Bytes;
-                //  mem.Write(int24AsBytes, 0, int24AsBytes.Length);
+                utocStream.Write(intAsBytes, 0, intAsBytes.Length);
+
                 progress.Report((double)i / (chunked.Count - 1));
             }
 
-            bw.Close();
-            File.WriteAllBytes(Owen.Path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName).Replace(".ucas", ".utoc"), mem.ToArray());
-            mem.Close();
+            await File.WriteAllBytesAsync(
+                Owen.Path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName).Replace(".ucas", ".utoc"),
+                utocStream.ToArray());
 
-            Console.WriteLine();
-            WriteLineColored(ConsoleColor.Green, "Done!");
+            ucasStream.Close();
+            utocStream.Close();
+
+            WriteLineColored(ConsoleColor.Green, "\nDone!");
         }
     }
-    
+
     public static void WriteLineColored(ConsoleColor color, string text)
     {
         Console.ForegroundColor = color;
@@ -94,10 +113,10 @@ public static class Program
     private static List<byte[]> ChunkData(byte[] ubulkBytes)
     {
         List<byte[]> result = new();
-        int remainingLength = ubulkBytes.Length;
-        for (int i = 0; remainingLength > 0; i++)
+        var remainingLength = ubulkBytes.Length;
+        for (var i = 0; remainingLength > 0; i++)
         {
-            byte[] chunkData = new byte[remainingLength >= 65536 ? 65536 : remainingLength];
+            var chunkData = new byte[remainingLength >= 65536 ? 65536 : remainingLength];
             Array.Copy(ubulkBytes, i * 65536, chunkData, 0, remainingLength >= 65536 ? 65536 : remainingLength);
             result.Add(chunkData);
             remainingLength -= remainingLength >= 65536 ? 65536 : remainingLength;

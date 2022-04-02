@@ -1,4 +1,4 @@
-﻿namespace Custom_Texture_Importer;
+﻿namespace Custom_Texture_Importer.Models;
 
 public struct Config
 {
