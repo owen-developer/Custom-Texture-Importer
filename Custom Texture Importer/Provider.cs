@@ -21,16 +21,27 @@ namespace Custom_Texture_Importer
             _provider = new(FortniteUtil.PakPath, SearchOption.TopDirectoryOnly, false, new VersionContainer(EGame.GAME_UE5_LATEST));
             _provider.Initialize();
 
-            var web = new WebClient();
-            var aes = JsonConvert.DeserializeObject<AES>(web.DownloadString("https://fortnite-api.com/v2/aes")).Data;
+            var httpClient = new HttpClient();
+            var req = httpClient.GetAsync("https://fortnite-api.com/v2/aes");
+            req.Wait();
+            if (req.Result.StatusCode == HttpStatusCode.OK)
+            {
+                var content = req.Result.Content.ReadAsStringAsync();
+                content.Wait();
+                var aes = JsonConvert.DeserializeObject<AES>(content.Result).Data;
 
-            var keys = new List<KeyValuePair<FGuid, FAesKey>>();
-            if (aes.MainKey != null)
-                keys.Add(new(new FGuid(), new FAesKey(aes.MainKey)));
-            keys.AddRange(from x in aes.DynamicKeys
-                          select new KeyValuePair<FGuid, FAesKey>(new FGuid(x.PakGuid), new FAesKey(x.Key)));
-            _provider.SubmitKeys(keys);
-            _provider.LoadMappings();
+                var keys = new List<KeyValuePair<FGuid, FAesKey>>();
+                if (aes.MainKey != null)
+                    keys.Add(new(new FGuid(), new FAesKey(aes.MainKey)));
+                keys.AddRange(from x in aes.DynamicKeys
+                              select new KeyValuePair<FGuid, FAesKey>(new FGuid(x.PakGuid), new FAesKey(x.Key)));
+                _provider.SubmitKeys(keys);
+                _provider.LoadMappings();
+            }
+            else
+            {
+                Console.WriteLine("ERR | AES REQUEST ENDED WITH STATUS CODE " + req.Result.StatusCode);
+            }
         }
       
 
