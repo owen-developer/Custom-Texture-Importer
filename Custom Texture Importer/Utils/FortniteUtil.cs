@@ -5,7 +5,7 @@ namespace Custom_Texture_Importer.Utils;
 
 public class FortniteUtil
 {
-    public static Config ConfigData = new() { BackupFileName = "OwenClient" };
+    public static Config ConfigData = new() { BackupFileName = "OwenClient", rpcIsEnabled = true };
 
     public static string PakPath
         => GetFortnitePath() + @"\FortniteGame\Content\Paks";

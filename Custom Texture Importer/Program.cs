@@ -12,34 +12,23 @@ public static class Program
 {
     public static async Task Main()
     {
-        DiscordRpcClient client = new("958805762455523358");
-        client.Initialize();
-        client.SetPresence(new RichPresence
-        {
-            Details = "Made by @owenonhxd",
-            State = "Importing a texture.",
-            Assets = new Assets
-            {
-                LargeImageKey = "54129bd57b2f996b25c6759b9833f1e9",
-                LargeImageText = "Custom Texture Importer (Made by Owen)"
-            }
-        });
-
         const string config = "config.json";
         if (!File.Exists(config))
-            await File.WriteAllTextAsync(config, JsonConvert.SerializeObject(FortniteUtil.ConfigData));
+            await File.WriteAllTextAsync(config, JsonConvert.SerializeObject(FortniteUtil.ConfigData, Formatting.Indented));
         else FortniteUtil.ConfigData = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync(config));
 
+        RichPresenceClient.Start();
+
         var provider = new MyFileProvider().Provider;
-        
+
         while (true)
         {
             Console.Write("Input the path to the texture's ubulk to replace OR input 'exit' to close the tool > ");
             var texturePath = Console.ReadLine()?.Replace(".uasset", ".ubulk");
-            
+
             if (texturePath == "exit")
                 break;
-            
+
             if (texturePath is null or "")
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -47,6 +36,8 @@ public static class Program
                 Console.ResetColor();
                 continue;
             }
+
+            RichPresenceClient.UpdatePresence("Made by @owenonhxd", $"Importinng Texture {Path.GetFileNameWithoutExtension(texturePath)}");
 
             Owen.IsExporting = true;
             await provider.SaveAssetAsync(texturePath);
@@ -100,6 +91,8 @@ public static class Program
             utocStream.Close();
 
             WriteLineColored(ConsoleColor.Green, "\nDone!");
+
+            RichPresenceClient.UpdatePresence("Made by @owenonhxd", "Browsing for Texture...");
         }
     }
 

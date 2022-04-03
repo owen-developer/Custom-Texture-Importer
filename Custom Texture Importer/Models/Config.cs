@@ -3,4 +3,6 @@
 public struct Config
 {
     public string BackupFileName;
+
+    public bool rpcIsEnabled;
 }
