@@ -13,8 +13,6 @@ namespace Custom_Texture_Importer.Utils
 
         private static RichPresence _currentPresence;
 
-        private static readonly bool rpcIsEnabled = FortniteUtil.ConfigData.rpcIsEnabled;
-
         private static readonly Assets _assets = new Assets
         {
             LargeImageKey = "54129bd57b2f996b25c6759b9833f1e9",
@@ -42,7 +40,7 @@ namespace Custom_Texture_Importer.Utils
 
         public static void Start()
         {
-            if (!rpcIsEnabled)
+            if (!Models.Config.CurrentConfig.rpcIsEnabled)
                 return;
 
             Client = new("958805762455523358");
@@ -62,10 +60,7 @@ namespace Custom_Texture_Importer.Utils
 
         public static void UpdatePresence(string details, string State)
         {
-            if (!rpcIsEnabled)
-                return;
-
-            if (!Client.IsInitialized)
+            if (!Models.Config.CurrentConfig.rpcIsEnabled || !Client.IsInitialized)
                 return;
 
             _currentPresence.Details = details;
