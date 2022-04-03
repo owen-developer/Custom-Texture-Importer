@@ -55,7 +55,7 @@ public static class Backup
                             break;
                         }
 
-                        if (File.Exists(paritionPath.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName)))
+                        if (File.Exists(paritionPath.Replace("WindowsClient", Models.Config.CurrentConfig.BackupFileName)))
                         {
                             Report();
                             continue;
@@ -71,7 +71,7 @@ public static class Backup
 
                         await using var sourceStream = new FileStream(paritionPath, FileMode.Open, FileAccess.Read);
                         await using (var destinationStream = new FileStream(
-                                         paritionPath.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName),
+                                         paritionPath.Replace("WindowsClient", Models.Config.CurrentConfig.BackupFileName),
                                          FileMode.Create, FileAccess.Write, FileShare.None, 8,
                                          FileOptions.Asynchronous | FileOptions.SequentialScan))
                         {
@@ -102,7 +102,7 @@ public static class Backup
             }
             else
             {
-                var newPath = path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName);
+                var newPath = path.Replace("WindowsClient", Models.Config.CurrentConfig.BackupFileName);
                 if (File.Exists(newPath))
                 {
                     Report();

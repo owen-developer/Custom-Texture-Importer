@@ -12,11 +12,8 @@ public static class Program
 {
     public static async Task Main()
     {
-        const string config = "config.json";
-        if (!File.Exists(config))
-            await File.WriteAllTextAsync(config, JsonConvert.SerializeObject(FortniteUtil.ConfigData, Formatting.Indented));
-        else FortniteUtil.ConfigData = JsonConvert.DeserializeObject<Config>(await File.ReadAllTextAsync(config));
-
+        Config.InitConfig();
+        
         RichPresenceClient.Start();
 
         var provider = new MyFileProvider().Provider;
@@ -49,13 +46,13 @@ public static class Program
             await Backup.BackupFile(Owen.Path);
 
             var ucasStream = new BinaryWriter(File.OpenWrite(Owen.Partition == 0
-                ? Owen.Path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName).Replace(".utoc", ".ucas")
-                : Owen.Path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName + "_s" + Owen.Partition)
+                ? Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName).Replace(".utoc", ".ucas")
+                : Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName + "_s" + Owen.Partition)
                     .Replace(".utoc", ".ucas")));
             var utocStream = new MemoryStream(
-                File.Exists(Owen.Path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName))
+                File.Exists(Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName))
                     ? await File.ReadAllBytesAsync(Owen.Path.Replace("WindowsClient",
-                        FortniteUtil.ConfigData.BackupFileName))
+                        Config.CurrentConfig.BackupFileName))
                     : await File.ReadAllBytesAsync(Owen.Path));
             var tocOffset =
                 (uint)FileUtil.IndexOfSequence(utocStream.ToArray(), BitConverter.GetBytes((int)Owen.FirstOffset));
@@ -84,7 +81,7 @@ public static class Program
             }
 
             await File.WriteAllBytesAsync(
-                Owen.Path.Replace("WindowsClient", FortniteUtil.ConfigData.BackupFileName).Replace(".ucas", ".utoc"),
+                Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName).Replace(".ucas", ".utoc"),
                 utocStream.ToArray());
 
             ucasStream.Close();
