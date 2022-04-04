@@ -116,7 +116,7 @@ public static class Backup
 
         progress.Report(1, 1000);
         Console.WriteLine();
-        Custom_Texture_Importer.Program.WriteLineColored(Custom_Texture_Importer.Program.SYSTEM_COLOR, "Finished backing up files.");
+        Custom_Texture_Importer.Program.WriteLineColored(Custom_Texture_Importer.Program.INFO_COLOR, "Finished backing up files.");
         progress.Dispose();
     }
 }

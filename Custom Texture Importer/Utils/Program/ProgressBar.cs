@@ -9,7 +9,6 @@ public class ProgressBar : IDisposable, IProgress<double>
     private readonly TimeSpan animationInterval = TimeSpan.FromSeconds(1.0 / 8);
 
     private readonly Timer timer;
-    private int animationIndex = 0;
 
     private double currentProgress;
     private string currentText = string.Empty;
@@ -39,6 +38,15 @@ public class ProgressBar : IDisposable, IProgress<double>
         value = Math.Max(0, Math.Min(1, value));
         Interlocked.Exchange(ref currentProgress, value);
         Thread.Sleep(sleepTime);
+        if (value == 1)
+        {
+            Console.WriteLine();
+        }
+    }
+
+    public void Report(double value)
+    {
+        Report(value, 100);
     }
 
     private void TimerHandler(object state)

@@ -100,7 +100,7 @@ public class FortniteUtil
                 File.Delete(file);
             }
 
-            progress.Report((double)i / files.Length - 1, 50);
+            progress.Report((double)i / (files.Length - 1), 50);
         }
     }
 }
