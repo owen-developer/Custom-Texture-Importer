@@ -1,4 +1,5 @@
 ﻿using Custom_Texture_Importer.Models;
+using Custom_Texture_Importer.Utils.Program;
 using Newtonsoft.Json;
 
 namespace Custom_Texture_Importer.Utils;
@@ -85,6 +86,22 @@ public class FortniteUtil
 
         return JsonConvert.DeserializeObject<InstalledApps>(File.ReadAllText(path)).InstallationList
             .FirstOrDefault(x => x.AppName == "Fortnite").AppVersion;
+    }
+
+    public static void RemoveDupedUcas()
+    {
+        var progress = new ProgressBar();
+        var files = Directory.GetFiles(PakPath);
+        for (var i = 0; i < files.Length; i++)
+        {
+            var file = files[i];
+            if (file.Contains(Config.CurrentConfig.BackupFileName))
+            {
+                File.Delete(file);
+            }
+
+            progress.Report((double)i / files.Length - 1);
+        }
     }
 }
 

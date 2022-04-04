@@ -3,34 +3,45 @@ using Custom_Texture_Importer.Models;
 using Custom_Texture_Importer.Utils;
 using Custom_Texture_Importer.Utils.Libs;
 using Custom_Texture_Importer.Utils.Program;
-using DiscordRPC;
-using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Custom_Texture_Importer;
 
 public static class Program
 {
+#pragma warning disable CA2211
+    public static ConsoleColor SYSTEM_COLOR = ConsoleColor.Green;
+    public static ConsoleColor ERROR_COLOR = ConsoleColor.Red;
+    public static ConsoleColor WARNING_COLOR = ConsoleColor.Yellow;
+    public static ConsoleColor INPUT_COLOR = ConsoleColor.Cyan;
+    public static ConsoleColor PROGRESS_BAR_COLOR = ConsoleColor.Blue;
+#pragma warning restore CA2211
+
     public static async Task Main()
     {
         Config.InitConfig();
-        
+        SYSTEM_COLOR = Config.CurrentConfig.SystemColor;
+        ERROR_COLOR = Config.CurrentConfig.ErrorColor;
+        WARNING_COLOR = Config.CurrentConfig.WarningColor;
+        INPUT_COLOR = Config.CurrentConfig.InputColor;
+        PROGRESS_BAR_COLOR = Config.CurrentConfig.ProgressBarColor;
+
         RichPresenceClient.Start();
 
-        var provider = new MyFileProvider().Provider;
+        var provider = new FileProvider().Provider;
 
         while (true)
         {
-            Console.Write("Input the path to the texture's ubulk to replace OR input 'exit' to close the tool > ");
-            var texturePath = Console.ReadLine()?.Replace(".uasset", ".ubulk");
-
-            if (texturePath == "exit")
-                break;
+            var texturePath = Input("Input the path to the texture's ubulk to replace OR input 'exit' to close the tool > ", out var isCommand);
+            if (isCommand)
+                continue;
+            
+            texturePath = texturePath.Replace(".uasset", ".ubulk");
 
             if (texturePath is null or "")
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                WriteLineColored(ConsoleColor.Red, "Please input a path");
-                Console.ResetColor();
+                WriteLineColored(ERROR_COLOR, "Please input a path");
                 continue;
             }
 
@@ -38,9 +49,11 @@ public static class Program
 
             Owen.IsExporting = true;
             await provider.SaveAssetAsync(texturePath);
-            Console.Write("Input your custom ubulk (must be the same size) > ");
-            var ubulkBytes = await File.ReadAllBytesAsync(Console.ReadLine()?.Replace("\"", string.Empty) ??
-                                                          throw new FileNotFoundException("A file cannot be \"null\""));
+            var customUbulkPath = Input("Input your custom ubulk (must be the same size) > ", out var isCmd).Replace("\"", string.Empty) ??
+                                                          throw new FileNotFoundException("A file cannot be \"null\"");
+            if (isCmd)
+                continue;
+            var ubulkBytes = await File.ReadAllBytesAsync(customUbulkPath);
             var chunked = ChunkData(ubulkBytes);
 
             await Backup.BackupFile(Owen.Path);
@@ -59,7 +72,7 @@ public static class Program
             uint written = 0;
 
             Console.WriteLine();
-            WriteLineColored(ConsoleColor.Green, "Processing...");
+            WriteLineColored(SYSTEM_COLOR, "Processing...");
             var progress = new ProgressBar();
             for (var i = 0; i < chunked.Count; i++)
             {
@@ -83,11 +96,13 @@ public static class Program
             await File.WriteAllBytesAsync(
                 Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName).Replace(".ucas", ".utoc"),
                 utocStream.ToArray());
+            
+            Console.WriteLine();
 
             ucasStream.Close();
             utocStream.Close();
 
-            WriteLineColored(ConsoleColor.Green, "\nDone!");
+            WriteLineColored(SYSTEM_COLOR, "\nDone!");
 
             RichPresenceClient.UpdatePresence("Made by @owenonhxd", "Browsing for Texture...");
         }
@@ -98,6 +113,63 @@ public static class Program
         Console.ForegroundColor = color;
         Console.WriteLine(text);
         Console.ResetColor();
+    }
+
+    public static void WriteColored(ConsoleColor color, string text)
+    {
+        Console.ForegroundColor = color;
+        Console.Write(text);
+        Console.ResetColor();
+    }
+
+    private static string Input(string text, out bool isCommand)
+    {
+        WriteColored(SYSTEM_COLOR, text);
+        Console.ForegroundColor = INPUT_COLOR;
+        var input = Console.ReadLine();
+        isCommand = CheckForCommands(input).Result;
+        Console.ResetColor();
+        return input;
+    }
+
+    private static async Task<bool> CheckForCommands(string input)
+    {
+        if (input[0] == '#')
+        {
+            input = input[1..].ToLower();
+            switch (input)
+            {
+                case "exit":
+                    Environment.Exit(0);
+                    break;
+                case "cls":
+                    Console.Clear();
+                    break;
+                case "restore":
+                    FortniteUtil.RemoveDupedUcas();
+                    WriteLineColored(SYSTEM_COLOR, "Removed duped files!");
+                    break;
+                case "backup":
+                    await Backup.BackupFile(Owen.Path);
+                    WriteLineColored(SYSTEM_COLOR, "Backed up files");
+                    break;
+                case "help":
+                    WriteLineColored(SYSTEM_COLOR, "Commands:");
+                    WriteLineColored(SYSTEM_COLOR, "exit - Exits the program");
+                    WriteLineColored(SYSTEM_COLOR, "cls - Clears the console");
+                    WriteLineColored(SYSTEM_COLOR, "restore - Removes duped files");
+                    WriteLineColored(SYSTEM_COLOR, "backup - Backups the current file");
+                    WriteLineColored(SYSTEM_COLOR, "help - Shows this message");
+                    break;
+                default:
+                    WriteLineColored(ERROR_COLOR, "Invalid command");
+                    return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private static List<byte[]> ChunkData(byte[] ubulkBytes)
