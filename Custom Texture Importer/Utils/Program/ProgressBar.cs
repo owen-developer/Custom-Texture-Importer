@@ -33,12 +33,12 @@ public class ProgressBar : IDisposable, IProgress<double>
         }
     }
 
-    public void Report(double value)
+    public void Report(double value, int sleepTime = 100)
     {
         // Make sure value is in [0..1] range
         value = Math.Max(0, Math.Min(1, value));
         Interlocked.Exchange(ref currentProgress, value);
-        Thread.Sleep(100);
+        Thread.Sleep(sleepTime);
     }
 
     private void TimerHandler(object state)

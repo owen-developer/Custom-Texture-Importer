@@ -90,7 +90,7 @@ public static class Program
                 var intAsBytes = BitConverter.GetBytes((ushort)compressed.Length);
                 utocStream.Write(intAsBytes, 0, intAsBytes.Length);
 
-                progress.Report((double)i / (chunked.Count - 1));
+                progress.Report((double)i / (chunked.Count - 1), 50);
             }
 
             await File.WriteAllBytesAsync(
@@ -153,12 +153,20 @@ public static class Program
                     await Backup.BackupFile(Owen.Path);
                     WriteLineColored(SYSTEM_COLOR, "Backed up files");
                     break;
+                case "colors":
+                    // Print each color and it's value from ConsoleColor enum
+                    foreach (var color in Enum.GetValues(typeof(ConsoleColor)))
+                    {
+                        WriteLineColored((ConsoleColor)color, $"{color} = {(int)color}");
+                    }
+                    break;
                 case "help":
                     WriteLineColored(SYSTEM_COLOR, "Commands:");
                     WriteLineColored(SYSTEM_COLOR, "exit - Exits the program");
                     WriteLineColored(SYSTEM_COLOR, "cls - Clears the console");
                     WriteLineColored(SYSTEM_COLOR, "restore - Removes duped files");
                     WriteLineColored(SYSTEM_COLOR, "backup - Backups the current file");
+                    WriteLineColored(SYSTEM_COLOR, "colors - Prints all the available colors you can use for UI colors.");
                     WriteLineColored(SYSTEM_COLOR, "help - Shows this message");
                     break;
                 default:
