@@ -38,8 +38,9 @@ public class ProgressBar : IDisposable, IProgress<double>
         value = Math.Max(0, Math.Min(1, value));
         Interlocked.Exchange(ref currentProgress, value);
         Thread.Sleep(sleepTime);
-        if (value == 1)
+        if (value == 1.0)
         {
+            Thread.Sleep(100);
             Console.WriteLine();
         }
     }

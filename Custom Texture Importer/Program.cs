@@ -83,7 +83,8 @@ public static class Program
                 var progress = new ProgressBar();
                 for (var i = 0; i < chunked.Count; i++)
                 {
-                    var compressed = Oodle.Compress(chunked[i]);
+                    var oodle = new Oodle();
+                    var compressed = oodle.Compress(chunked[i]);
 
                     ucasStream.BaseStream.Position = Owen.FirstOffset + written;
                     ucasStream.Write(compressed, 0, compressed.Length);
@@ -103,8 +104,6 @@ public static class Program
                 await File.WriteAllBytesAsync(
                     Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName).Replace(".ucas", ".utoc"),
                     utocStream.ToArray());
-
-                Console.WriteLine();
 
                 ucasStream.Close();
                 utocStream.Close();
