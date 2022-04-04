@@ -164,7 +164,7 @@ public static class Program
     {
         if (input[0] == '#')
         {
-            input = input[1..(!input.Contains(' ') ? input.IndexOf(input[^1]) + 1 : input.IndexOf(' '))].ToLower();
+            input = input[1..(!input.Contains(' ') ? input.Length : input.IndexOf(' '))].ToLower();
             switch (input)
             {
                 case "exit":
