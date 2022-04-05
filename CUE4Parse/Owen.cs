@@ -12,19 +12,14 @@ namespace CUE4Parse
         public static int Partition = 0;
         public static List<string> Paths = new();
         public static List<long> Offsets = new();
-        public static long FirstOffset = PullOffset();
-        public static bool IsExporting = false;
-
-        private static long PullOffset()
+        public static long FirstOffset
         {
-            if (Offsets.Count == 0)
+            get
             {
-                return 0;
-            }
-            else
-            {
-                return Offsets[0];
+                return Offsets.Count == 0 ? 0 : Offsets[0];
             }
         }
+
+        public static bool IsExporting = false;
     }
 }

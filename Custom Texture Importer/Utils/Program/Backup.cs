@@ -22,7 +22,6 @@ public static class Backup
         var j = 0;
         Custom_Texture_Importer.Program.WriteLineColored(ConsoleColor.Green, "Backing up files...");
         var progress = new ProgressBar();
-        Thread.Sleep(1000);
 
         void Report()
         {
@@ -31,8 +30,8 @@ public static class Backup
         }
 
         foreach (var (fileExt, path) in from fileExt in fileExts
-                 let path = Path.Combine(FortniteUtil.PakPath, fileName + fileExt)
-                 select (fileExt, path))
+                                        let path = Path.Combine(FortniteUtil.PakPath, fileName + fileExt)
+                                        select (fileExt, path))
         {
             if (!File.Exists(path)) return;
 
@@ -115,7 +114,6 @@ public static class Backup
         }
 
         progress.Report(1, 1000);
-        Console.WriteLine();
         Custom_Texture_Importer.Program.WriteLineColored(Custom_Texture_Importer.Program.INFO_COLOR, "Finished backing up files.");
         progress.Dispose();
     }

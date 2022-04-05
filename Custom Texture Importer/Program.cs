@@ -42,7 +42,9 @@ public static class Program
             {
                 var texturePath = Input("Input the path to the texture's ubulk to replace > ", out var isCommand);
                 if (isCommand)
+                {
                     continue;
+                }
 
                 texturePath = texturePath.Replace(".uasset", ".ubulk");
 
@@ -55,12 +57,21 @@ public static class Program
                 RichPresenceClient.UpdatePresence("Made by @owenonhxd", $"Importinng Texture {Path.GetFileNameWithoutExtension(texturePath)}");
 
                 Owen.IsExporting = true;
-                await provider.SaveAssetAsync(texturePath);
+                var ubBytes = await provider.SaveAssetAsync(texturePath);
                 var customUbulkPath = Input("Input your custom ubulk (must be the same size) > ", out var isCmd).Replace("\"", string.Empty) ??
                                                               throw new FileNotFoundException("A file cannot be \"null\"");
                 if (isCmd)
+                {
                     continue;
+                }
+                
                 var ubulkBytes = await File.ReadAllBytesAsync(customUbulkPath);
+                if (ubulkBytes.Length != ubBytes.Length)
+                {
+                    WriteLineColored(ERROR_COLOR, "The ubulk you provided is not the same size as the original");
+                    continue;
+                }
+                
                 var chunked = ChunkData(ubulkBytes);
 
                 await Backup.BackupFile(Owen.Path);
@@ -68,12 +79,14 @@ public static class Program
                 var ucasStream = new BinaryWriter(File.OpenWrite(Owen.Partition == 0
                     ? Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName).Replace(".utoc", ".ucas")
                     : Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName + "_s" + Owen.Partition)
-                        .Replace(".utoc", ".ucas")));
+                               .Replace(".utoc", ".ucas")));
+
                 var utocStream = new MemoryStream(
                     File.Exists(Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName))
                         ? await File.ReadAllBytesAsync(Owen.Path.Replace("WindowsClient",
                             Config.CurrentConfig.BackupFileName))
                         : await File.ReadAllBytesAsync(Owen.Path));
+
                 var tocOffset =
                     (uint)FileUtil.IndexOfSequence(utocStream.ToArray(), BitConverter.GetBytes((int)Owen.FirstOffset));
                 uint written = 0;
@@ -151,7 +164,7 @@ public static class Program
     private static string Input(string text, out bool isCommand)
     {
         WriteColored(INFO_COLOR, text);
-        Console.ForegroundColor = INPUT_COLOR;
+        Console.ForegroundColor = Console.ForegroundColor != INPUT_COLOR ? INPUT_COLOR : Console.ForegroundColor;
         var input = Console.ReadLine();
         isCommand = CheckForCommands(input);
         Console.ResetColor();
@@ -175,10 +188,6 @@ public static class Program
                 case "restore":
                     FortniteUtil.RemoveDupedUcas();
                     WriteLineColored(INFO_COLOR, "Removed duped files!");
-                    break;
-                case "backup":
-                    Backup.BackupFile(Owen.Path).RunSynchronously();
-                    WriteLineColored(INFO_COLOR, "Backed up files");
                     break;
                 case "colors":
                     // Print each color and it's value from ConsoleColor enum
