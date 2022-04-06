@@ -110,6 +110,11 @@ public static class Program
                     progressBar.Report((double)i / (chunkedData.Count - 1), 500);
                 }
 
+                Owen.Offsets.Clear();
+                ucasStream.Close();
+                utocStream.Close();
+                progressBar.Dispose();
+
                 WriteLineColored(INFO_COLOR, "\nDone!");
 
                 RichPresenceClient.UpdatePresence("Made by @owenonhxd", "Browsing for Texture...");

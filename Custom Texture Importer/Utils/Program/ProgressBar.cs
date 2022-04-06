@@ -34,6 +34,11 @@ public class ProgressBar : IDisposable, IProgress<double>
 
     public void Report(double value, int sleepTime = 100)
     {
+        if (value < 0)
+        {
+            value = 0;
+        }
+
         // Make sure value is in [0..1] range
         value = Math.Max(0, Math.Min(1, value));
         Interlocked.Exchange(ref currentProgress, value);
@@ -59,6 +64,15 @@ public class ProgressBar : IDisposable, IProgress<double>
             Console.ForegroundColor = Custom_Texture_Importer.Program.PROGRESS_BAR_COLOR;
             var progressBlockCount = (int)(currentProgress * blockCount);
             var percent = (int)(currentProgress * 100);
+            if (progressBlockCount < 0)
+            {
+                progressBlockCount = 0;
+            }
+            if (percent < 0)
+            {
+                percent = 0;
+            }
+
             var text = string.Format("[{0}{1}] {2,3}% {3}",
                 new string('#', progressBlockCount), new string('-', blockCount - progressBlockCount), percent, "");
             UpdateText(text);
