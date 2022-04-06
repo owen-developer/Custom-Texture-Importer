@@ -10,13 +10,14 @@ namespace Custom_Texture_Importer;
 
 public static class Program
 {
-#pragma warning disable CA2211
+#pragma warning disable CA2211, IDE0090
     public static ConsoleColor INFO_COLOR = ConsoleColor.Green;
     public static ConsoleColor ERROR_COLOR = ConsoleColor.Red;
     public static ConsoleColor WARNING_COLOR = ConsoleColor.Yellow;
     public static ConsoleColor INPUT_COLOR = ConsoleColor.Cyan;
     public static ConsoleColor PROGRESS_BAR_COLOR = ConsoleColor.Blue;
-#pragma warning restore CA2211
+    private static readonly object _lock = new object();
+#pragma warning restore CA2211, IDE0090
 
     public static async Task Main()
     {
@@ -134,28 +135,40 @@ public static class Program
 
     public static void WriteLineColored(ConsoleColor color, string text)
     {
-        Console.ForegroundColor = color;
-        Console.WriteLine(text);
-        Console.ResetColor();
-        Thread.Sleep(50);
+        lock (_lock)
+        {
+            Console.ForegroundColor = color;
+            Console.WriteLine(text);
+            Console.ResetColor();
+            Thread.Sleep(50);
+        }
     }
 
     public static void WriteColored(ConsoleColor color, string text)
     {
-        Console.ForegroundColor = color;
-        Console.Write(text);
-        Console.ResetColor();
-        Thread.Sleep(50);
+        lock (_lock)
+        {
+            Console.ForegroundColor = color;
+            Console.Write(text);
+            Console.ResetColor();
+            Thread.Sleep(50);
+        }
     }
 
     private static string Input(string text, out bool isCommand)
     {
-        WriteColored(INFO_COLOR, text);
-        Console.ForegroundColor = Console.ForegroundColor != INPUT_COLOR ? INPUT_COLOR : Console.ForegroundColor;
-        var input = Console.ReadLine();
-        isCommand = CheckForCommands(input);
-        Console.ResetColor();
-        Thread.Sleep(50);
+        string input = null;
+        lock (_lock)
+        {
+            WriteColored(INFO_COLOR, text);
+            Console.ForegroundColor = INPUT_COLOR;
+            input = Console.ReadLine();
+            isCommand = CheckForCommands(input);
+            Thread.Sleep(50);
+            Console.ResetColor();
+            Thread.Sleep(50);
+        }
+        
         return input;
     }
 
