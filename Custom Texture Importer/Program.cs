@@ -57,7 +57,7 @@ public static class Program
                 RichPresenceClient.UpdatePresence("Made by @owenonhxd", $"Importinng Texture {Path.GetFileNameWithoutExtension(texturePath)}");
 
                 Owen.IsExporting = true;
-                var ubBytes = await provider.SaveAssetAsync(texturePath);
+                var originalUbulkBytes = await provider.SaveAssetAsync(texturePath);
                 var customUbulkPath = Input("Input your custom ubulk (must be the same size) > ", out var isCmd).Replace("\"", string.Empty) ??
                                                               throw new FileNotFoundException("A file cannot be \"null\"");
                 if (isCmd)
@@ -65,61 +65,48 @@ public static class Program
                     continue;
                 }
                 
-                var ubulkBytes = await File.ReadAllBytesAsync(customUbulkPath);
-                if (ubulkBytes.Length != ubBytes.Length)
+                var customUbulkBytes = await File.ReadAllBytesAsync(customUbulkPath);
+                if (customUbulkBytes.Length != originalUbulkBytes.Length)
                 {
                     WriteLineColored(ERROR_COLOR, "The ubulk you provided is not the same size as the original");
                     continue;
                 }
-                
-                var chunked = ChunkData(ubulkBytes);
 
+                var chunkedData = ChunkData(customUbulkBytes);
                 await Backup.BackupFile(Owen.Path);
-
+                
                 var ucasStream = new BinaryWriter(File.OpenWrite(Owen.Partition == 0
-                    ? Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName).Replace(".utoc", ".ucas")
-                    : Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName + "_s" + Owen.Partition)
-                               .Replace(".utoc", ".ucas")));
-
+                ? Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName).Replace(".utoc", ".ucas")
+                : Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName + "_s" + Owen.Partition)
+                           .Replace(".utoc", ".ucas")));
+                
                 var utocStream = new MemoryStream(
                     File.Exists(Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName))
                         ? await File.ReadAllBytesAsync(Owen.Path.Replace("WindowsClient",
                             Config.CurrentConfig.BackupFileName))
                         : await File.ReadAllBytesAsync(Owen.Path));
 
-                var tocOffset =
-                    (uint)FileUtil.IndexOfSequence(utocStream.ToArray(), BitConverter.GetBytes((int)Owen.FirstOffset));
-                uint written = 0;
+                var tocOffset = FileUtil.IndexOfSequence(utocStream.ToArray(), 
+                                                         BitConverter.GetBytes((int)Owen.Offsets.ElementAt(0)));
+                var written = (long)0;
 
-                Console.WriteLine();
-                WriteLineColored(INFO_COLOR, "Processing...");
-                var progress = new ProgressBar();
-                for (var i = 0; i < chunked.Count; i++)
+                WriteLineColored(INFO_COLOR, "Replacing texture data...");
+                var progressBar = new ProgressBar();
+                for (int i = 0; i < chunkedData.Count; i++)
                 {
-                    var oodle = new Oodle();
-                    var compressed = oodle.Compress(chunked[i]);
-
-                    ucasStream.BaseStream.Position = Owen.FirstOffset + written;
-                    ucasStream.Write(compressed, 0, compressed.Length);
-                    written += (uint)compressed.Length + 10;
-
-                    utocStream.Position = tocOffset + i * 12;
+                    var compressedChunk = new Oodle().Compress(chunkedData[i]);
+                    ucasStream.BaseStream.Position = Owen.Offsets.Pop();
                     var longAsBytes = BitConverter.GetBytes((int)ucasStream.BaseStream.Position);
+                    ucasStream.Write(compressedChunk, 0, compressedChunk.Length);
+                    written += compressedChunk.Length + 10;
+                    utocStream.Position = tocOffset + (i * 12);
                     utocStream.Write(longAsBytes, 0, longAsBytes.Length);
                     utocStream.Position += 1;
-
-                    var intAsBytes = BitConverter.GetBytes((ushort)compressed.Length);
+                    var intAsBytes = BitConverter.GetBytes((ushort)compressedChunk.Length);
                     utocStream.Write(intAsBytes, 0, intAsBytes.Length);
 
-                    progress.Report((double)i / (chunked.Count - 1), 50);
+                    progressBar.Report((double)i / (chunkedData.Count - 1), 500);
                 }
-
-                await File.WriteAllBytesAsync(
-                    Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName).Replace(".ucas", ".utoc"),
-                    utocStream.ToArray());
-
-                ucasStream.Close();
-                utocStream.Close();
 
                 WriteLineColored(INFO_COLOR, "\nDone!");
 

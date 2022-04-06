@@ -11,15 +11,18 @@ namespace CUE4Parse
         public static string Path = string.Empty;
         public static int Partition = 0;
         public static List<string> Paths = new();
-        public static List<long> Offsets = new();
-        public static long FirstOffset
-        {
-            get
-            {
-                return Offsets.Count == 0 ? 0 : Offsets[0];
-            }
-        }
+        public static Stack<long> Offsets = new();
 
         public static bool IsExporting = false;
+
+        public static Stack<T> Reverse<T>(this Stack<T> stack)
+        {
+            var newStack = new Stack<T>();
+            while (stack.Count > 0)
+            {
+                newStack.Push(stack.Pop());
+            }
+            return newStack;
+        }
     }
 }

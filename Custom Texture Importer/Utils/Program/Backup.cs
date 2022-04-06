@@ -15,8 +15,7 @@ public static class Backup
         };
 
         if (fileName.Contains("ient_s")) // Check if it's partitioned
-            fileName = fileName.Split("ient_s")[0] +
-                       "ient"; // Remove the partition from the name because they don't get utocs
+            fileName = fileName.Split("ient_s")[0] + "ient"; // Remove the partition from the name because they don't get utocs
 
         const int count = 8;
         var j = 0;
@@ -33,7 +32,10 @@ public static class Backup
                                         let path = Path.Combine(FortniteUtil.PakPath, fileName + fileExt)
                                         select (fileExt, path))
         {
-            if (!File.Exists(path)) return;
+            if (!File.Exists(path))
+            {
+                return;
+            }
 
             if (fileExt is ".ucas")
             {
