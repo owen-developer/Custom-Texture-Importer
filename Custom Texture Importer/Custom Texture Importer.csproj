@@ -5,7 +5,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>Custom_Texture_Importer</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
+        <Nullable>disable</Nullable>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     </PropertyGroup>
 

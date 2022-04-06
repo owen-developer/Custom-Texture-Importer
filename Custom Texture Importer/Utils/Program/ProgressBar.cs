@@ -9,7 +9,6 @@ public class ProgressBar : IDisposable, IProgress<double>
     private readonly TimeSpan animationInterval = TimeSpan.FromSeconds(1.0 / 8);
 
     private readonly Timer timer;
-    private int animationIndex = 0;
 
     private double currentProgress;
     private string currentText = string.Empty;
@@ -33,11 +32,22 @@ public class ProgressBar : IDisposable, IProgress<double>
         }
     }
 
-    public void Report(double value)
+    public void Report(double value, int sleepTime = 100)
     {
         // Make sure value is in [0..1] range
         value = Math.Max(0, Math.Min(1, value));
         Interlocked.Exchange(ref currentProgress, value);
+        Thread.Sleep(sleepTime);
+        if (value == 1.0)
+        {
+            Thread.Sleep(100);
+            Console.WriteLine();
+        }
+    }
+
+    public void Report(double value)
+    {
+        Report(value, 100);
     }
 
     private void TimerHandler(object state)
@@ -46,7 +56,7 @@ public class ProgressBar : IDisposable, IProgress<double>
         {
             if (disposed) return;
 
-            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.ForegroundColor = Custom_Texture_Importer.Program.PROGRESS_BAR_COLOR;
             var progressBlockCount = (int)(currentProgress * blockCount);
             var percent = (int)(currentProgress * 100);
             var text = string.Format("[{0}{1}] {2,3}% {3}",

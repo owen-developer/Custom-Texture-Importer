@@ -8,11 +8,11 @@ using Newtonsoft.Json;
 
 namespace Custom_Texture_Importer.Utils.Libs;
 
-public class MyFileProvider
+public class FileProvider
 {
     public readonly DefaultFileProvider Provider;
 
-    public MyFileProvider()
+    public FileProvider()
     {
         if (!CheckForConnection())
             throw new HttpRequestException("No internet connection");

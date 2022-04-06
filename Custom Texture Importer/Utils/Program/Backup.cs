@@ -15,27 +15,27 @@ public static class Backup
         };
 
         if (fileName.Contains("ient_s")) // Check if it's partitioned
-            fileName = fileName.Split("ient_s")[0] +
-                       "ient"; // Remove the partition from the name because they don't get utocs
+            fileName = fileName.Split("ient_s")[0] + "ient"; // Remove the partition from the name because they don't get utocs
 
         const int count = 8;
         var j = 0;
         Custom_Texture_Importer.Program.WriteLineColored(ConsoleColor.Green, "Backing up files...");
         var progress = new ProgressBar();
-        Thread.Sleep(1000);
 
         void Report()
         {
-            progress.Report((double)j / count);
-            Thread.Sleep(50);
+            progress.Report((double)j / count, 500);
             j++;
         }
 
         foreach (var (fileExt, path) in from fileExt in fileExts
-                 let path = Path.Combine(FortniteUtil.PakPath, fileName + fileExt)
-                 select (fileExt, path))
+                                        let path = Path.Combine(FortniteUtil.PakPath, fileName + fileExt)
+                                        select (fileExt, path))
         {
-            if (!File.Exists(path)) return;
+            if (!File.Exists(path))
+            {
+                return;
+            }
 
             if (fileExt is ".ucas")
             {
@@ -51,7 +51,6 @@ public static class Backup
                         if (!File.Exists(paritionPath))
                         {
                             Report();
-                            Thread.Sleep(1000);
                             break;
                         }
 
@@ -116,9 +115,8 @@ public static class Backup
             }
         }
 
-        progress.Report(1);
-        Custom_Texture_Importer.Program.WriteLineColored(ConsoleColor.Green, "Finished backing up files.");
-        Thread.Sleep(500);
+        progress.Report(1, 1000);
+        Custom_Texture_Importer.Program.WriteLineColored(Custom_Texture_Importer.Program.INFO_COLOR, "Finished backing up files.");
         progress.Dispose();
     }
 }

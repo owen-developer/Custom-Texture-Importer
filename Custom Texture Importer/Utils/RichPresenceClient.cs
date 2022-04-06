@@ -40,7 +40,7 @@ namespace Custom_Texture_Importer.Utils
 
         public static void Start()
         {
-            if (!Models.Config.CurrentConfig.rpcIsEnabled)
+            if (!Models.Config.CurrentConfig.RpcIsEnabled)
                 return;
 
             Client = new("958805762455523358");
@@ -60,7 +60,7 @@ namespace Custom_Texture_Importer.Utils
 
         public static void UpdatePresence(string details, string State)
         {
-            if (!Models.Config.CurrentConfig.rpcIsEnabled || !Client.IsInitialized)
+            if (!Models.Config.CurrentConfig.RpcIsEnabled || !Client.IsInitialized)
                 return;
 
             _currentPresence.Details = details;
