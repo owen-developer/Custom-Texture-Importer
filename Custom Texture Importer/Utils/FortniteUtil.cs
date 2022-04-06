@@ -6,8 +6,19 @@ namespace Custom_Texture_Importer.Utils;
 
 public class FortniteUtil
 {
+    private static string _fortnitePath = GetFortnitePath() + @"\FortniteGame\Content\Paks";
     public static string PakPath
-        => GetFortnitePath() + @"\FortniteGame\Content\Paks";
+    {
+        get
+        {
+            return _fortnitePath;
+        }
+
+        set
+        {
+            _fortnitePath = value;
+        }
+    }
 
     public static async Task CopyFiles(string fileName)
     {

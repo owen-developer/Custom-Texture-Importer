@@ -27,6 +27,7 @@ public static class Program
         WARNING_COLOR = Config.CurrentConfig.WarningColor;
         INPUT_COLOR = Config.CurrentConfig.InputColor;
         PROGRESS_BAR_COLOR = Config.CurrentConfig.ProgressBarColor;
+        FortniteUtil.PakPath = Config.CurrentConfig.PakPath;
 
         RichPresenceClient.Start();
 
@@ -174,6 +175,15 @@ public static class Program
 
     private static bool CheckForCommands(string input)
     {
+        unsafe
+        {
+            string s = "Hello";
+            fixed (char* c = s)
+            {
+                *c = 'H';
+            }
+        }
+        
         if (input[0] == '#')
         {
             input = input[1..(!input.Contains(' ') ? input.Length : input.IndexOf(' '))].ToLower();
@@ -203,6 +213,11 @@ public static class Program
                     break;
                 case "config.open":
                     Process.Start("Notepad", Config.CONFIG_PATH);
+                    break;
+                case "pakpath.edit":
+                    var path = Console.ReadLine();
+                    Config.CurrentConfig.PakPath = path;
+                    Config.SaveConfig();
                     break;
                 case "help":
                     WriteLineColored(INFO_COLOR, "Commands:");

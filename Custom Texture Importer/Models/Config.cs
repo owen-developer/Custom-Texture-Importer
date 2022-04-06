@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Custom_Texture_Importer.Utils;
 using System.Reflection;
 
 namespace Custom_Texture_Importer.Models
@@ -24,6 +25,8 @@ namespace Custom_Texture_Importer.Models
         {
             [JsonProperty]
             public string BackupFileName { get; set; } = "OwenClient";
+            [JsonProperty]
+            public string PakPath { get; set; } = FortniteUtil.PakPath;
             [JsonProperty]
             public ConsoleColor InfoColor { get; set; } = ConsoleColor.Green;
             [JsonProperty]
