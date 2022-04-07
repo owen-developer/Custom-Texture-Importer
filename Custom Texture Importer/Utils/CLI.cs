@@ -3,6 +3,7 @@ using Custom_Texture_Importer.UI;
 using System.Diagnostics;
 
 namespace Custom_Texture_Importer.Utils;
+
 public static class CLI
 {
     public static Task<bool> IsCommand(string input)
