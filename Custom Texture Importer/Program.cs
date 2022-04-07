@@ -8,6 +8,7 @@ using Custom_Texture_Importer.UI;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using CUE4Parse.FileProvider;
+using Custom_Texture_Importer.Utils.CommandLineParser;
 
 namespace Custom_Texture_Importer;
 
@@ -17,6 +18,10 @@ public static class Program
     {
         Config.InitConfig();
         FortniteUtil.PakPath = Config.CurrentConfig.PakPath;
+        if (Config.CurrentConfig.HelpMessage)
+        {
+            Evaluator.PrintHelpMessage();
+        }
 
         RichPresenceClient.Start();
 
@@ -30,7 +35,7 @@ public static class Program
         {
             try
             {
-                var (texturePath, isCommand) = RunTask(GUI.Input("Input the path to the texture's ubulk to replace > "));
+                var (texturePath, isCommand) = RunTask(GUI.Input("Input the path to the texture's ubulk to replace ·"));
                 if (isCommand)
                 {
                     continue;
@@ -42,7 +47,7 @@ public static class Program
 
                 Owen.IsExporting = true;
                 var originalUbulkBytes = await provider.SaveAssetAsync(texturePath);
-                var (customUbulkPath, isCmd) = RunTask(GUI.Input("Input your custom ubulk (must be the same size) > "));
+                var (customUbulkPath, isCmd) = RunTask(GUI.Input("Input your custom ubulk (must be the same size) ·"));
                 customUbulkPath = customUbulkPath.Replace("\"", string.Empty) ?? throw new FileNotFoundException("A file cannot be \"null\"");
                 if (isCmd)
                 {

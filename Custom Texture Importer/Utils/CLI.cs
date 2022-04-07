@@ -1,6 +1,8 @@
 ﻿using Custom_Texture_Importer.Models;
 using Custom_Texture_Importer.UI;
+using Spectre.Console;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace Custom_Texture_Importer.Utils;
 
@@ -44,10 +46,14 @@ public static class CLI
                 GUI.WriteLineColored(GUI.INFO_COLOR, "Removed duped files!");
                 break;
             case "colors":
-                // Print each color and it's value from ConsoleColor enum
-                foreach (var color in Enum.GetValues(typeof(ConsoleColor)))
+                var colors = typeof(Color).GetProperties(BindingFlags.Public | BindingFlags.Static);
+                foreach (var color in colors)
                 {
-                    GUI.WriteLineColored((ConsoleColor)color, $"{color} = {(int)color}");
+                    if (color.PropertyType == typeof(Color))
+                    {
+                        var c = (Color)color.GetValue(null);
+                        GUI.WriteLineColored(GUI.INFO_COLOR, c.ToMarkup());
+                    }
                 }
                 break;
             case "config":
@@ -81,4 +87,72 @@ public static class CLI
         return true;
     }
     
+    private static void EvaluateCommand(string input)
+    {
+        var parts = ParseCommand(input);
+        var config = parts[0] == "config";
+    }
+
+    private static void EvaluateConfigCommand(string[] parts)
+    {
+        var edit = parts[1] == "edit";
+        var open = parts[1] == "open";
+        var save = parts[1] == "save";
+        if (edit)
+        {
+            
+        }
+    }
+
+    private static void EditConfig(string[] parts)
+    {
+        var property = parts[2];
+        
+    }
+
+    private static unsafe string[] ParseCommand(string input)
+    {
+        int position = 0;
+        var parts = new List<string>();
+        string part;
+        do
+        {
+            part = Parse(&position, input);
+            if (part != null)
+            {
+                parts.Add(part);
+            }
+        }
+        while (part != null);
+
+        return parts.ToArray();
+    }
+
+    private static unsafe string Parse(int* position, string input)
+    {
+        char Peek(int offset)
+        {
+            var index = *position + offset;
+            if (index >= input.Length)
+            {
+                return '\0';
+            }
+
+            return input[index];
+        }
+
+        if (Peek(0) == '\0')
+        {
+            return null;
+        }
+
+        var start = *position;
+        while (Peek(0) != '.' &&
+               Peek(0) != '\0')
+        {
+            *position += 1;
+        }
+
+        return input[start..*position];
+    }
 }

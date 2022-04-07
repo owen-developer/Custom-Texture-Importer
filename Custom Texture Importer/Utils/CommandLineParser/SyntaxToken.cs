@@ -1,0 +1,15 @@
+﻿namespace Custom_Texture_Importer.Utils.CommandLineParser;
+
+public readonly struct SyntaxToken
+{
+    public SyntaxToken(SyntaxKind kind, int position, string text)
+    {
+        Kind = kind;
+        Position = position;
+        Text = text;
+    }
+
+    public SyntaxKind Kind { get; }
+    public int Position { get; }
+    public string Text { get; }
+}

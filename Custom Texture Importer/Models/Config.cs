@@ -38,6 +38,7 @@ namespace Custom_Texture_Importer.Models
             public string InputColor { get; set; } = "orange1";
             [JsonProperty]
             public string PromptColor { get; set; } = "blue";
+            public bool HelpMessage { get; set; } = true;
             [JsonProperty]
             public bool RpcIsEnabled { get; set; } = true;
 
