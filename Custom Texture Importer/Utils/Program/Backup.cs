@@ -1,4 +1,6 @@
-﻿namespace Custom_Texture_Importer.Utils.Program;
+﻿using Custom_Texture_Importer.UI;
+
+namespace Custom_Texture_Importer.Utils.Program;
 
 public static class Backup
 {
@@ -17,27 +19,17 @@ public static class Backup
         if (fileName.Contains("ient_s")) // Check if it's partitioned
             fileName = fileName.Split("ient_s")[0] + "ient"; // Remove the partition from the name because they don't get utocs
 
-        const int count = 8;
-        var j = 0;
-        Custom_Texture_Importer.Program.WriteLineColored(ConsoleColor.Green, "Backing up files...");
-        var progress = new ProgressBar();
-
-        void Report()
+        await GUI.ProgressBarLoop("Backing up files", "Backing up", new ForLoop<string>(fileExts, 0, async ctx =>
         {
-            progress.Report((double)j / count, 500);
-            j++;
-        }
-
-        foreach (var (fileExt, path) in from fileExt in fileExts
-                                        let path = Path.Combine(FortniteUtil.PakPath, fileName + fileExt)
-                                        select (fileExt, path))
-        {
+            var fileExt = fileExts[ctx.Index];
+            var path = Path.Combine(FortniteUtil.PakPath, fileName + fileExt);
             if (!File.Exists(path))
             {
+                ctx.Break = true;
                 return;
             }
 
-            if (fileExt is ".ucas")
+            if (fileExt == ".ucas")
             {
                 for (var i = 0; i < 20; i++)
                 {
@@ -50,13 +42,12 @@ public static class Backup
 
                         if (!File.Exists(paritionPath))
                         {
-                            Report();
                             break;
                         }
 
+                        GUI.Log($"Backing up partition: {paritionPath}");
                         if (File.Exists(paritionPath.Replace("WindowsClient", Models.Config.CurrentConfig.BackupFileName)))
                         {
-                            Report();
                             continue;
                         }
 
@@ -95,28 +86,21 @@ public static class Backup
                     {
                         throw new FileLoadException($"Failed to open container partition {i} for {fileName}", e);
                     }
-
-                    Report();
                 }
             }
             else
             {
                 var newPath = path.Replace("WindowsClient", Models.Config.CurrentConfig.BackupFileName);
+                GUI.Log($"Backing up file: {path}");
                 if (File.Exists(newPath))
                 {
-                    Report();
-                    continue;
+                    return;
                 }
 
                 await using var source = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
                 await using var destination = File.Create(newPath);
                 await source.CopyToAsync(destination);
-                Report();
             }
-        }
-
-        progress.Report(1, 1000);
-        Custom_Texture_Importer.Program.WriteLineColored(Custom_Texture_Importer.Program.INFO_COLOR, "Finished backing up files.");
-        progress.Dispose();
+        }));
     }
 }

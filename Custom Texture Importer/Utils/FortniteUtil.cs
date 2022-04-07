@@ -1,4 +1,5 @@
 ﻿using Custom_Texture_Importer.Models;
+using Custom_Texture_Importer.UI;
 using Custom_Texture_Importer.Utils.Program;
 using Newtonsoft.Json;
 
@@ -30,7 +31,6 @@ public class FortniteUtil
             ".ucas"
         };
 
-        var i = 0;
         foreach (var fileExt in fileExts)
         {
             var path = Path.Combine(PakPath, fileName + fileExt);
@@ -98,21 +98,16 @@ public class FortniteUtil
         return JsonConvert.DeserializeObject<InstalledApps>(File.ReadAllText(path)).InstallationList
             .FirstOrDefault(x => x.AppName == "Fortnite").AppVersion;
     }
-
-    public static void RemoveDupedUcas()
+    
+    public static async Task RemoveDupedUcas()
     {
-        var progress = new ProgressBar();
-        var files = Directory.GetFiles(PakPath);
-        for (var i = 0; i < files.Length; i++)
+        var files = Directory.GetFiles(PakPath).Where(x => x.Contains(Config.CurrentConfig.BackupFileName)).ToArray();
+        await GUI.ProgressBarLoop("Removing duped files...", "Removing duped files", new ForLoop<byte>(files.Length, 0, ctx =>
         {
-            var file = files[i];
-            if (file.Contains(Config.CurrentConfig.BackupFileName))
-            {
-                File.Delete(file);
-            }
-
-            progress.Report((double)i / (files.Length - 1), 50);
-        }
+            var file = files[ctx.Index];
+            GUI.Log($"Removing file: {file}");
+            File.Delete(file);
+        }));
     }
 }
 

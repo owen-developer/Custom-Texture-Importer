@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Custom_Texture_Importer.Utils;
 using System.Reflection;
+using Spectre.Console;
 
 namespace Custom_Texture_Importer.Models
 {
@@ -28,15 +29,15 @@ namespace Custom_Texture_Importer.Models
             [JsonProperty]
             public string PakPath { get; set; } = FortniteUtil.PakPath;
             [JsonProperty]
-            public ConsoleColor InfoColor { get; set; } = ConsoleColor.Green;
+            public string InfoColor { get; set; } = "cyan1";
             [JsonProperty]
-            public ConsoleColor ErrorColor { get; set; } = ConsoleColor.Red;
+            public string ErrorColor { get; set; } = "red";
             [JsonProperty]
-            public ConsoleColor WarningColor { get; set; } = ConsoleColor.Yellow;
+            public string WarningColor { get; set; } = "yellow";
             [JsonProperty]
-            public ConsoleColor InputColor { get; set; } = ConsoleColor.Cyan;
+            public string InputColor { get; set; } = "orange1";
             [JsonProperty]
-            public ConsoleColor ProgressBarColor { get; set; } = ConsoleColor.Blue;
+            public string PromptColor { get; set; } = "blue";
             [JsonProperty]
             public bool RpcIsEnabled { get; set; } = true;
 
