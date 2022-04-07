@@ -8,7 +8,7 @@ using Custom_Texture_Importer.UI;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using CUE4Parse.FileProvider;
-using Custom_Texture_Importer.Utils.CLI;
+using Custom_Texture_Importer.Utils.CommandLineParser;
 
 namespace Custom_Texture_Importer;
 

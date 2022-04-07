@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Custom_Texture_Importer.Utils.CLI;
+namespace Custom_Texture_Importer.Utils.CommandLineParser;
 internal sealed class Lexer
 {
     private readonly List<string> _diagnostics;

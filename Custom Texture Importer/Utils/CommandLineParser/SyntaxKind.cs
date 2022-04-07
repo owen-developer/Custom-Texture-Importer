@@ -1,4 +1,4 @@
-﻿namespace Custom_Texture_Importer.Utils.CLI;
+﻿namespace Custom_Texture_Importer.Utils.CommandLineParser;
 
 public enum SyntaxKind
 {

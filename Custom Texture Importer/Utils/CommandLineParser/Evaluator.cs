@@ -3,7 +3,7 @@ using Custom_Texture_Importer.UI;
 using Spectre.Console;
 using System.Reflection;
 
-namespace Custom_Texture_Importer.Utils.CLI;
+namespace Custom_Texture_Importer.Utils.CommandLineParser;
 
 public sealed class Evaluator
 {
