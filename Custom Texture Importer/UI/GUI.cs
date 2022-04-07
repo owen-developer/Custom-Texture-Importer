@@ -1,5 +1,6 @@
 ﻿using Custom_Texture_Importer.Models;
 using Custom_Texture_Importer.Utils;
+using Custom_Texture_Importer.Utils.CLI;
 using Spectre.Console;
 
 namespace Custom_Texture_Importer.UI;
@@ -17,7 +18,7 @@ public static class GUI
     {
         if (!AnsiConsole.Profile.Capabilities.Interactive)
         {
-            AnsiConsole.Markup($"[{ERROR_COLOR}]Environment does not support interaction.[/]");
+            WriteLineColored(INFO_COLOR, "Environment does not support interaction.");
             return;
         }
 
@@ -26,6 +27,7 @@ public static class GUI
         WARNING_COLOR = GetColorFromName(Config.CurrentConfig.WarningColor);
         INPUT_COLOR = GetColorFromName(Config.CurrentConfig.InputColor);
         PROMPT_COLOR = GetColorFromName(Config.CurrentConfig.PromptColor);
+        WriteLineColored(INFO_COLOR, "Welcome to the Custom Texture Importer!");
     }
 
     private static Color GetColorFromName(string name)
@@ -81,7 +83,7 @@ public static class GUI
 
     public static void ProgressBarAction(string processingText, string headerText, Action action)
     {
-        AnsiConsole.MarkupLine($"[{INFO_COLOR.ToMarkup()}]{processingText}[/]...");
+        AnsiConsole.MarkupLine($"[{INFO_COLOR.ToMarkup()}]{processingText}...[/]");
 
         AnsiConsole.Progress()
             .AutoClear(false)
@@ -115,8 +117,31 @@ public static class GUI
             new TextPrompt<string>($"[{PROMPT_COLOR.ToMarkup()}]{prompt}[/]")
                 .PromptStyle(INPUT_COLOR.ToMarkup()));
 
-        var isCommand = await CLI.IsCommand(input);
+        var isCommand = false;
+        if (input[0] == '#')
+        {
+            await RunCommand(input[1..]);
+            isCommand = true;
+        }
+        
         return await Task.FromResult((input, isCommand));
+    }
+
+    private static async Task RunCommand(string command)
+    {
+        var parser = new Parser(command);
+        if (parser.Diagnostics.Any())
+        {
+            foreach (var diagnostic in parser.Diagnostics)
+            {
+                AnsiConsole.MarkupLine($"[{ERROR_COLOR.ToMarkup()}]{diagnostic}[/]");
+            }
+
+            return;
+        }
+
+        var evaluator = new Evaluator(parser.Parse());
+        await evaluator.Evaluate();
     }
 
     public static void Log(string text)
@@ -127,5 +152,10 @@ public static class GUI
     public static void WriteLineColored(Color color, string text)
     {
         AnsiConsole.MarkupLine($"[{color}]{text}[/]");
+    }
+
+    public static void Clear()
+    {
+        AnsiConsole.Clear();
     }
 }
