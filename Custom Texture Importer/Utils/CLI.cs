@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Reflection;
 
 namespace Custom_Texture_Importer.Utils;
+
 public static class CLI
 {
     public static Task<bool> IsCommand(string input)
