@@ -10,6 +10,9 @@ namespace CUE4Parse
     {
         public static string Path = string.Empty;
         public static int Partition = 0;
+        public static Dictionary<long, long> OffsetsAndLengths = new();
+        public static List<long> TocOffsets = new();
+        public static List<long> TocOffsets2 = new();
         public static List<string> Paths = new();
         public static Stack<long> Offsets = new();
 

@@ -75,8 +75,9 @@ public static class Program
                             Config.CurrentConfig.BackupFileName))
                         : await File.ReadAllBytesAsync(Owen.Path));
 
-                var tocOffset = FileUtil.IndexOfSequence(utocStream.ToArray(),
-                                                         BitConverter.GetBytes((int)Owen.Offsets.ElementAt(0)));
+                var tocOffsets = Owen.TocOffsets;
+                var tocOffsets2 = Owen.TocOffsets2;
+
                 var written = (long)0;
 
                 await GUI.ProgressBarLoop("Replacing texture data", "Replacing", new ForLoop<byte[]>(chunkedData.ToArray(), 0, ctx =>
@@ -86,11 +87,13 @@ public static class Program
                     var longAsBytes = BitConverter.GetBytes((int)ucasStream.BaseStream.Position);
                     ucasStream.Write(compressedChunk, 0, compressedChunk.Length);
                     written += compressedChunk.Length + 10;
-                    utocStream.Position = tocOffset + (ctx.Index * 12);
+                    utocStream.Position = tocOffsets[ctx.Index];
                     utocStream.Write(longAsBytes, 0, longAsBytes.Length);
                     utocStream.Position += 1;
                     var intAsBytes = BitConverter.GetBytes((ushort)compressedChunk.Length);
                     utocStream.Write(intAsBytes, 0, intAsBytes.Length);
+                    utocStream.Position = tocOffsets2[ctx.Index] + 4;
+                    utocStream.Write(intAsBytes.Reverse().ToArray(), 0, intAsBytes.Length);
                 }));
 
                 Owen.Offsets.Clear();

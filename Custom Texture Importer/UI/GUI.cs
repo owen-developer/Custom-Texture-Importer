@@ -1,5 +1,4 @@
 ﻿using Custom_Texture_Importer.Models;
-using Custom_Texture_Importer.Utils;
 using Custom_Texture_Importer.Utils.CommandLineParser;
 using Spectre.Console;
 
