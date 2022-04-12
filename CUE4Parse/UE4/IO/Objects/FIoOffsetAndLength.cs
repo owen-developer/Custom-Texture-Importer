@@ -9,6 +9,8 @@ namespace CUE4Parse.UE4.IO.Objects
 
         public FIoOffsetAndLength(FArchive Ar)
         {
+            var pos = Ar.Position;
+
             unsafe
             {
                 var offsetAndLength = stackalloc byte[10];
@@ -24,6 +26,9 @@ namespace CUE4Parse.UE4.IO.Objects
                          | ((ulong) offsetAndLength[6] << 24)
                          | ((ulong) offsetAndLength[5] << 32);
             }
+
+            if (Owen.OffsetsAndLengths.ContainsKey((long)Offset) && Owen.OffsetsAndLengths.ContainsValue((long)Length))
+                Owen.TocOffsets2.Add(pos);
         }
 
         public override string ToString()
