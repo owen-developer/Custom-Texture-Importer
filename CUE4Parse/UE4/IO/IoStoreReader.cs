@@ -242,7 +242,7 @@ namespace CUE4Parse.UE4.IO
                 {
                     Owen.Path = Path;
                     Owen.Partition = partitionIndex;
-                    Owen.Offsets.Push(partitionOffset);
+                    Owen.Offsets.Add(partitionOffset);
                 }
 
                 FArchive reader;
@@ -279,8 +279,6 @@ namespace CUE4Parse.UE4.IO
 
                 reader.Position = 0;
             }
-
-            Owen.Offsets = Owen.Offsets.Reverse();
             
             return dst;
         }
