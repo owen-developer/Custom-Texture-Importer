@@ -28,7 +28,7 @@ namespace CUE4Parse.UE4.IO.Objects
             }
 
             if (Owen.OffsetsAndLengths.ContainsKey((long)Offset) && Owen.OffsetsAndLengths.ContainsValue((long)Length))
-                Owen.TocOffsets2.Add(pos);
+                Owen.TocOffset2 = pos;
         }
 
         public override string ToString()

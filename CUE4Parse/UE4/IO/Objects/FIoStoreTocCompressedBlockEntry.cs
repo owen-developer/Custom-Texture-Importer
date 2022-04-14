@@ -28,9 +28,6 @@ namespace CUE4Parse.UE4.IO.Objects
                 UncompressedSize = *((uint*) data + 2) & SizeMask;
                 CompressionMethodIndex = (byte) (*((uint*) data + 2) >> SizeBits);
             }
-
-            if (Owen.Offsets.Contains(Offset))
-                Owen.TocOffsets.Add(pos);
         }
 
         public override string ToString()
