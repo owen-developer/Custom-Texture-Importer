@@ -26,6 +26,7 @@ public static class Program
         RichPresenceClient.Start();
 
         DefaultFileProvider provider = null;
+        DefaultFileProvider provider2 = null;
         GUI.ProgressBarAction("Initializing Provider", "Initializing Provider", () =>
         {
             provider = new FileProvider().Provider;
@@ -43,11 +44,20 @@ public static class Program
 
                 texturePath = texturePath.Replace(".uasset", ".ubulk") ?? throw new Exception("Please input a path");
 
-                RichPresenceClient.UpdatePresence("Made by @owenonhxd", $"Importinng Texture {Path.GetFileNameWithoutExtension(texturePath)}");
+                RichPresenceClient.UpdatePresence("Made by @owenonhxd", $"Importing Texture {Path.GetFileNameWithoutExtension(texturePath)}");
 
                 Owen.IsExporting = true;
                 var originalUbulkBytes = await provider.SaveAssetAsync(texturePath);
-                var (customUbulkPath, isCmd) = RunTask(GUI.Input("Input your custom ubulk (must be the same size) ·"));
+                Owen.IsExporting = false;
+
+                GUI.ProgressBarAction("Initializing Secondary Provider", "Initializing Provider", () =>
+                {
+                    provider2 = new FileProvider().Provider;
+                    Owen.IsExporting = true;
+                    _ = provider.SaveAsset(texturePath);
+                });
+
+                var (customUbulkPath, isCmd) = RunTask(GUI.Input("Input your custom ubulk (must be the same size or smaller) ·"));
                 customUbulkPath = customUbulkPath.Replace("\"", string.Empty) ?? throw new FileNotFoundException("A file cannot be \"null\"");
                 if (isCmd)
                 {
@@ -55,10 +65,17 @@ public static class Program
                 }
 
                 var customUbulkBytes = await File.ReadAllBytesAsync(customUbulkPath);
-                if (customUbulkBytes.Length != originalUbulkBytes.Length)
+
+                if (customUbulkBytes.Length < originalUbulkBytes.Length)
                 {
-                    GUI.WriteLineColored(GUI.ERROR_COLOR, "The ubulk you provided is not the same size as the original");
-                    continue;
+                    List<byte> result = new(customUbulkBytes);
+                    for (int i = 0; i < originalUbulkBytes.Length - customUbulkBytes.Length - 1; i++)
+                        result.Add(0);
+                    customUbulkBytes = result.ToArray();
+                }
+                else if (customUbulkBytes.Length > originalUbulkBytes.Length)
+                {
+                    throw new Exception($"BAD SIZE: Custom UBulk is {customUbulkBytes.Length - originalUbulkBytes.Length} bytes longer than the original");   
                 }
 
                 var chunkedData = ChunkData(customUbulkBytes);
@@ -75,29 +92,43 @@ public static class Program
                             Config.CurrentConfig.BackupFileName))
                         : await File.ReadAllBytesAsync(Owen.Path));
 
-                var tocOffsets = Owen.TocOffsets;
-                var tocOffsets2 = Owen.TocOffsets2;
+                var tocOffset = (uint)FileUtil.IndexOfSequence(utocStream.ToArray(), 
+                    BitConverter.GetBytes((int)Owen.Offsets.First()));
 
                 var written = (long)0;
+                int timesWritten = 0;
 
                 await GUI.ProgressBarLoop("Replacing texture data", "Replacing", new ForLoop<byte[]>(chunkedData.ToArray(), 0, ctx =>
                 {
                     var compressedChunk = new Oodle().Compress(chunkedData[ctx.Index]);
-                    ucasStream.BaseStream.Position = Owen.Offsets.Pop();
+
+                    ucasStream.BaseStream.Position = Owen.Offsets[0] + written;
                     var longAsBytes = BitConverter.GetBytes((int)ucasStream.BaseStream.Position);
                     ucasStream.Write(compressedChunk, 0, compressedChunk.Length);
+
                     written += compressedChunk.Length + 10;
-                    utocStream.Position = tocOffsets[ctx.Index];
+
+                    utocStream.Position = tocOffset + ctx.Index * 12;
                     utocStream.Write(longAsBytes, 0, longAsBytes.Length);
+
                     utocStream.Position += 1;
-                    var intAsBytes = BitConverter.GetBytes((ushort)compressedChunk.Length);
-                    utocStream.Write(intAsBytes, 0, intAsBytes.Length);
-                    utocStream.Position = tocOffsets2[ctx.Index] + 4;
-                    utocStream.Write(intAsBytes.Reverse().ToArray(), 0, intAsBytes.Length);
+                    var intAsBytesC = BitConverter.GetBytes((ushort)compressedChunk.Length);
+                    utocStream.Write(intAsBytesC, 0, intAsBytesC.Length);
+
+                    utocStream.Position += 1;
+                    var intAsBytesD = BitConverter.GetBytes((ushort)chunkedData[ctx.Index].Length);
+                    utocStream.Write(intAsBytesD, 0, intAsBytesD.Length);
+
+                    utocStream.Position = Owen.TocOffset2 + 7;
+                    var completeBlockD = new UInt24((uint)customUbulkBytes.Length).Bytes.Reverse().ToArray();
+                    utocStream.Write(completeBlockD, 0, completeBlockD.Length);
+
+                    timesWritten++;
                 }));
 
                 Owen.Offsets.Clear();
                 ucasStream.Close();
+                File.WriteAllBytes(Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName), utocStream.ToArray());
                 utocStream.Close();
 
                 RichPresenceClient.UpdatePresence("Made by @owenonhxd", "Browsing for Texture");
