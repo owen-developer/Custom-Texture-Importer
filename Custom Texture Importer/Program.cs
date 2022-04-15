@@ -68,10 +68,12 @@ public static class Program
 
                 if (customUbulkBytes.Length < originalUbulkBytes.Length)
                 {
+                    GUI.Log("Fixing small ubulk (EXPERIMENTAL)...");
                     List<byte> result = new(customUbulkBytes);
                     for (int i = 0; i < originalUbulkBytes.Length - customUbulkBytes.Length - 1; i++)
                         result.Add(0);
                     customUbulkBytes = result.ToArray();
+                    GUI.Log("Fixed small ubulk.");
                 }
                 else if (customUbulkBytes.Length > originalUbulkBytes.Length)
                 {
@@ -96,7 +98,6 @@ public static class Program
                     BitConverter.GetBytes((int)Owen.Offsets.First()));
 
                 var written = (long)0;
-                int timesWritten = 0;
 
                 await GUI.ProgressBarLoop("Replacing texture data", "Replacing", new ForLoop<byte[]>(chunkedData.ToArray(), 0, ctx =>
                 {
@@ -108,22 +109,12 @@ public static class Program
 
                     written += compressedChunk.Length + 10;
 
-                    utocStream.Position = tocOffset + ctx.Index * 12;
+                    utocStream.Position = Owen.TocOffsets[ctx.Index];
                     utocStream.Write(longAsBytes, 0, longAsBytes.Length);
 
                     utocStream.Position += 1;
                     var intAsBytesC = BitConverter.GetBytes((ushort)compressedChunk.Length);
                     utocStream.Write(intAsBytesC, 0, intAsBytesC.Length);
-
-                    utocStream.Position += 1;
-                    var intAsBytesD = BitConverter.GetBytes((ushort)chunkedData[ctx.Index].Length);
-                    utocStream.Write(intAsBytesD, 0, intAsBytesD.Length);
-
-                    utocStream.Position = Owen.TocOffset2 + 7;
-                    var completeBlockD = new UInt24((uint)customUbulkBytes.Length).Bytes.Reverse().ToArray();
-                    utocStream.Write(completeBlockD, 0, completeBlockD.Length);
-
-                    timesWritten++;
                 }));
 
                 Owen.Offsets.Clear();
