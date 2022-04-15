@@ -1,4 +1,6 @@
 ﻿using CUE4Parse.UE4.Readers;
+using System;
+using System.Linq;
 
 namespace CUE4Parse.UE4.IO.Objects
 {
@@ -15,18 +17,20 @@ namespace CUE4Parse.UE4.IO.Objects
         public readonly uint UncompressedSize;
         public readonly byte CompressionMethodIndex;
 
+        public readonly long Position;
+
         public FIoStoreTocCompressedBlockEntry(FArchive Ar)
         {
-            var pos = Ar.Position;
+            Position = Ar.Position;
 
             unsafe
             {
                 var data = stackalloc byte[5 + 3 + 3 + 1];
                 Ar.Serialize(data, 5 + 3 + 3 + 1);
-                Offset = (long) (*(ulong*) data & OffsetMask);
-                CompressedSize = (*((uint*) data + 1) >> SizeShift) & SizeMask;
-                UncompressedSize = *((uint*) data + 2) & SizeMask;
-                CompressionMethodIndex = (byte) (*((uint*) data + 2) >> SizeBits);
+                Offset = (long)(*(ulong*)data & OffsetMask);
+                CompressedSize = (*((uint*)data + 1) >> SizeShift) & SizeMask;
+                UncompressedSize = *((uint*)data + 2) & SizeMask;
+                CompressionMethodIndex = (byte)(*((uint*)data + 2) >> SizeBits);
             }
         }
 
