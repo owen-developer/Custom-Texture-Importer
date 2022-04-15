@@ -57,7 +57,6 @@ public static class GUI
                 new TaskDescriptionColumn(),
                 new ProgressBarColumn(),
                 new PercentageColumn(),
-                new RemainingTimeColumn(),
                 new SpinnerColumn(),
                 })
                 .Start(ctx =>
@@ -91,7 +90,6 @@ public static class GUI
                 new TaskDescriptionColumn(),
                 new ProgressBarColumn(),
                 new PercentageColumn(),
-                new RemainingTimeColumn(),
                 new SpinnerColumn(),
             })
             .Start(ctx =>
