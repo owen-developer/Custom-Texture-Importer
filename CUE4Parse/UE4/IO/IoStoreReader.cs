@@ -204,11 +204,6 @@ namespace CUE4Parse.UE4.IO
 
         private byte[] Read(long offset, long length)
         {
-            if (Owen.IsExporting && !Owen.OffsetsAndLengths.ContainsKey(offset)) 
-                Owen.OffsetsAndLengths.Add(offset, length);
-            else if (Owen.IsExporting)
-                Owen.OffsetsAndLengths[offset] = length;
-            
             var compressionBlockSize = TocResource.Header.CompressionBlockSize;
             var dst = new byte[length];
             var firstBlockIndex = (int) (offset / compressionBlockSize);
@@ -225,6 +220,10 @@ namespace CUE4Parse.UE4.IO
             for (int blockIndex = firstBlockIndex; blockIndex <= lastBlockIndex; blockIndex++)
             {
                 ref var compressionBlock = ref TocResource.CompressionBlocks[blockIndex];
+                if (Owen.IsExporting)
+                {
+                    Owen.TocOffsets.Add(TocResource.CompressionBlocks[blockIndex].Position);
+                }
 
                 var rawSize = compressionBlock.CompressedSize.Align(Aes.ALIGN);
                 if (compressedBuffer.Length < rawSize)
