@@ -118,6 +118,9 @@ public static class Program
                 }));
 
                 Owen.Offsets.Clear();
+                Owen.TocOffsets.Clear();
+                Owen.Paths.Clear();
+                
                 ucasStream.Close();
                 File.WriteAllBytes(Owen.Path.Replace("WindowsClient", Config.CurrentConfig.BackupFileName), utocStream.ToArray());
                 utocStream.Close();
