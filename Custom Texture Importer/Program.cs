@@ -101,7 +101,7 @@ public static class Program
 
                 await GUI.ProgressBarLoop("Replacing texture data", "Replacing", new ForLoop<byte[]>(chunkedData.ToArray(), 0, ctx =>
                 {
-                    var compressedChunk = new Oodle().Compress(chunkedData[ctx.Index]);
+                    var compressedChunk = Oodle.Compress(chunkedData[ctx.Index]);
 
                     ucasStream.BaseStream.Position = Owen.Offsets[0] + written;
                     var longAsBytes = BitConverter.GetBytes((int)ucasStream.BaseStream.Position);

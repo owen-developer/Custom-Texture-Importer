@@ -6,62 +6,53 @@ namespace Custom_Texture_Importer.Utils.Libs;
 
 public class Oodle
 {
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern bool SetDllDirectory(string lpPathName);
-
-    public Oodle(string DllPath = null)
+    public static byte[] Compress(byte[] decompressedBuffer)
     {
-        if (DllPath != null)
-            SetDllDirectory(DllPath);
-    }
+        uint ui; // Needs to be outside so it always has a value
+        try
+        {
+            ui = (uint)OodleStream.OodleLZ_Compress(OodleFormat.Kraken, decompressedBuffer, // Get decompressed buffer
+                decompressedBuffer.Length, // Get decompressed length
+                new byte[(int)(uint)decompressedBuffer.Length + 274U *
+                    (((uint)decompressedBuffer.Length + 262143U) / 262144U)], // Get compressed size
+                OodleCompressionLevel.Optimal5, 0U, 0U, 0U, 0);
+        }
+        catch (AccessViolationException)
+        {
+            ui = 64U; // Just in case there is protected memory
+        }
 
+        return OodleStream.OodleCompress(decompressedBuffer, 
+                                         decompressedBuffer.Length, 
+                                         OodleFormat.Kraken, 
+                                         OodleCompressionLevel.Optimal5, 
+                                         ui);
+    }
+}
+
+public class OodleStream
+{
     [DllImport("oo2core_5_win64.dll")]
-    private static extern int OodleLZ_Compress(OodleFormat Format, byte[] Buffer, long BufferSize,
-        byte[] OutputBuffer, OodleCompressionLevel Level, uint a, uint b, uint c);
+    public static extern int OodleLZ_Compress(OodleFormat format, byte[]? decompressedBuffer, long decompressedSize,
+        byte[] compressedBuffer, OodleCompressionLevel compressionLevel, uint a, uint b, uint c,
+        ThreadModule threadModule); // Oodle dll method
 
-    [DllImport("oo2core_5_win64.dll")]
-    private static extern int OodleLZ_Decompress(byte[] Buffer, long BufferSize, byte[] OutputBuffer,
-        long OutputBufferSize, uint a, uint b, uint c, uint d, uint e, uint f, uint g, uint h, uint i, int ThreadModule);
-
-    public uint GetCompressedBounds(uint BufferSize)
+    public static byte[] OodleCompress(byte[]? decompressedBuffer, int decompressedSize, OodleFormat format,
+        OodleCompressionLevel compressionLevel, uint a)
     {
-        return BufferSize + 274 * ((BufferSize + 0x3FFFF) / 0x40000);
+        var array = new byte[(uint)decompressedSize + 274U * (((uint)decompressedSize + 262143U) / 262144U)]; // Initializes array with compressed array size
+        var compressedBytes = new byte[a + (uint)OodleLZ_Compress(format, decompressedBuffer, // Initializes the array we will be returning
+            decompressedSize, array, compressionLevel, 0U, 0U,
+            0U, 0U) - (int)a];
+        Buffer.BlockCopy(array, 0, compressedBytes, 0, OodleLZ_Compress(format, decompressedBuffer, decompressedSize,
+            array, compressionLevel, 0U, 0U,
+            0U, 0U)); // Combines the two arrays
+        return compressedBytes;
     }
+}
 
-    private uint CompressStream(byte[] Buffer, uint BufferSize, ref byte[] OutputBuffer, uint OutputBufferSize,
-        OodleFormat Format, OodleCompressionLevel Level)
-    {
-        if (Buffer.Length > 0 && BufferSize > 0 && OutputBuffer.Length > 0 && OutputBufferSize > 0)
-            return (uint)OodleLZ_Compress(Format, Buffer, BufferSize, OutputBuffer, Level, 0, 0, 0);
-
-        return 0;
-    }
-
-    private uint DecompressStream(byte[] Buffer, uint BufferSize, ref byte[] OutputBuffer, uint OutputBufferSize)
-    {
-        if (Buffer.Length > 0 && BufferSize > 0 && OutputBuffer.Length > 0 && OutputBufferSize > 0)
-            return (uint)OodleLZ_Decompress(Buffer, BufferSize, OutputBuffer, OutputBufferSize, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-
-        return 0;
-    }
-
-    public byte[] Compress(byte[] Buffer)
-    {
-        var MaxLength = GetCompressedBounds((uint)Buffer.Length);
-        var OutputBuffer = new byte[MaxLength];
-
-        var CompressedSize = CompressStream(Buffer, (uint)Buffer.Length, ref OutputBuffer, MaxLength,
-            OodleFormat.Kraken, OodleCompressionLevel.Optimal5);
-
-        var tempBuffer = new byte[CompressedSize];
-        Array.Copy(OutputBuffer, tempBuffer, CompressedSize);
-
-        if (CompressedSize > 0)
-            // Remove all bytes after the compressed size
-            return tempBuffer;
-
-        throw new InvalidDataException("Unable to compress buffer.");
-    }
+public enum ThreadModule : uint
+{
 }
 
 public enum OodleFormat : uint
@@ -82,7 +73,7 @@ public enum OodleFormat : uint
     Leviathan = 13
 }
 
-public enum OodleCompressionLevel : uint
+public enum OodleCompressionLevel : ulong
 {
     None = 0,
     SuperFast = 1,
@@ -94,4 +85,11 @@ public enum OodleCompressionLevel : uint
     Optimal3 = 7,
     Optimal4 = 8,
     Optimal5 = 9
+}
+
+public enum CompressionType : uint // Used for decompression so not needed here, unless someone wants to add it
+{
+    Unknown,
+    Oodle,
+    Zlib
 }
