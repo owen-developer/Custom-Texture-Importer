@@ -9,7 +9,9 @@ namespace CUE4Parse.UE4.Assets.Exports.Texture
     [JsonConverter(typeof(FTexture2DMipMapConverter))]
     public class FTexture2DMipMap
     {
+        public readonly long Position;
         public readonly FByteBulkData Data;
+        public readonly long SizeOffset;
         public readonly int SizeX;
         public readonly int SizeY;
         public readonly int SizeZ;
@@ -18,8 +20,10 @@ namespace CUE4Parse.UE4.Assets.Exports.Texture
         {
             var cooked = Ar.Ver >= EUnrealEngineObjectUE4Version.TEXTURE_SOURCE_ART_REFACTOR && Ar.Game < EGame.GAME_UE5_0 ? Ar.ReadBoolean() : Ar.IsFilterEditorOnly;
 
+            Position = Ar.Position;
             Data = new FByteBulkData(Ar);
 
+            SizeOffset = Ar.Position;
             if (Ar.Game == EGame.GAME_Borderlands3)
             {
                 SizeX = Ar.Read<ushort>();
