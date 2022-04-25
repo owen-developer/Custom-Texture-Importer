@@ -20,6 +20,8 @@ namespace CUE4Parse.UE4.Assets.Exports.SkeletalMesh
     [JsonConverter(typeof(FStaticLODModelConverter))]
     public class FStaticLODModel
     {
+        public long BulkDataPosition;
+        public FByteBulkData BulkData;
         public FSkelMeshSection[] Sections;
         public FMultisizeIndexContainer? Indices;
         public short[] ActiveBoneIndices;
@@ -203,7 +205,10 @@ namespace CUE4Parse.UE4.Assets.Exports.SkeletalMesh
                 }
                 else
                 {
+                    BulkDataPosition = Ar.Position;
                     var bulk = new FByteBulkData(Ar);
+                    BulkData = bulk;
+                    
                     if (bulk.Header.ElementCount > 0)
                     {
                         using (var tempAr = new FByteArchive("LodReader", bulk.Data, Ar.Versions))
