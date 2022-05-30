@@ -12,12 +12,12 @@ public class FileProvider
 {
     public readonly DefaultFileProvider Provider;
 
-    public FileProvider()
+    public FileProvider(string paks = null)
     {
         if (!CheckForConnection())
             throw new HttpRequestException("No internet connection");
         
-        Provider = new DefaultFileProvider(FortniteUtil.PakPath, SearchOption.TopDirectoryOnly, false,
+        Provider = new DefaultFileProvider(paks ?? FortniteUtil.PakPath, SearchOption.TopDirectoryOnly, false,
             new VersionContainer(EGame.GAME_UE5_LATEST));
         Provider.Initialize();
 

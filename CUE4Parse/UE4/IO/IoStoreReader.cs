@@ -114,6 +114,7 @@ namespace CUE4Parse.UE4.IO
         public override byte[] Extract(VfsEntry entry)
         {
             if (!(entry is FIoStoreEntry ioEntry) || entry.Vfs != this) throw new ArgumentException($"Wrong io store reader, required {entry.Vfs.Path}, this is {Path}");
+            Owen.TocIndex = ioEntry.TocEntryIndex;
             return Read(ioEntry.Offset, ioEntry.Size);
         }
 
@@ -220,10 +221,6 @@ namespace CUE4Parse.UE4.IO
             for (int blockIndex = firstBlockIndex; blockIndex <= lastBlockIndex; blockIndex++)
             {
                 ref var compressionBlock = ref TocResource.CompressionBlocks[blockIndex];
-                if (Owen.IsExporting)
-                {
-                    Owen.TocOffsets.Add(TocResource.CompressionBlocks[blockIndex].Position);
-                }
 
                 var rawSize = compressionBlock.CompressedSize.Align(Aes.ALIGN);
                 if (compressedBuffer.Length < rawSize)
@@ -243,6 +240,8 @@ namespace CUE4Parse.UE4.IO
                 var partitionOffset = (long)((ulong)compressionBlock.Offset % TocResource.Header.PartitionSize);
                 if (Owen.IsExporting)
                 {
+                    Owen.Reader = this;
+                    Owen.FirstBlockIndex = firstBlockIndex;
                     Owen.Path = Path;
                     Owen.Partition = partitionIndex;
                     Owen.Offsets.Add(partitionOffset);
