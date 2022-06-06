@@ -21,64 +21,6 @@ public class FortniteUtil
         }
     }
 
-    public static async Task CopyFiles(string fileName)
-    {
-        var fileExts = new[]
-        {
-            ".pak",
-            ".sig",
-            ".utoc",
-            ".ucas"
-        };
-
-        foreach (var fileExt in fileExts)
-        {
-            var path = Path.Combine(PakPath, fileName + fileExt);
-            if (!File.Exists(path)) return;
-
-            if (fileExt is ".ucas")
-            {
-                Parallel.For(0, 20, async (i, state) =>
-                {
-                    try
-                    {
-                        var paritionPath = i > 0
-                            ? string.Concat(fileName, "_s", i, ".ucas")
-                            : string.Concat(fileName, ".ucas");
-                        paritionPath = Path.Combine(PakPath, paritionPath);
-
-                        if (!File.Exists(paritionPath))
-                        {
-                            state.Break();
-                            return;
-                        }
-
-                        if (File.Exists(paritionPath.Replace("WindowsClient", "SaturnClient"))) return;
-
-                        await using var paritionSource =
-                            File.Open(paritionPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        await using var paritionDestination =
-                            File.Create(paritionPath.Replace("WindowsClient", "SaturnClient"));
-                        await paritionSource.CopyToAsync(paritionDestination);
-                    }
-                    catch (Exception e)
-                    {
-                        throw new FileLoadException($"Failed to open container partition {i} for {fileName}", e);
-                    }
-                });
-            }
-            else
-            {
-                var newPath = path.Replace("WindowsClient", "SaturnClient");
-                if (File.Exists(newPath)) continue;
-
-                await using var source = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-                await using var destination = File.Create(newPath);
-                await source.CopyToAsync(destination);
-            }
-        }
-    }
-
     public static string GetFortnitePath()
     {
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),

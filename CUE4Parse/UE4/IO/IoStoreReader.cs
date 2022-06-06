@@ -71,7 +71,6 @@ namespace CUE4Parse.UE4.IO
                     try
                     {
                         var path = i > 0 ? string.Concat(environmentPath, "_s", i, ".ucas") : string.Concat(environmentPath, ".ucas");
-                        Owen.Paths.Add(path);
                         containerStreams.Add(openContainerStreamFunc(path));
                     }
                     catch (Exception e)
@@ -114,7 +113,6 @@ namespace CUE4Parse.UE4.IO
         public override byte[] Extract(VfsEntry entry)
         {
             if (!(entry is FIoStoreEntry ioEntry) || entry.Vfs != this) throw new ArgumentException($"Wrong io store reader, required {entry.Vfs.Path}, this is {Path}");
-            Owen.TocIndex = ioEntry.TocEntryIndex;
             return Read(ioEntry.Offset, ioEntry.Size);
         }
 
@@ -237,7 +235,8 @@ namespace CUE4Parse.UE4.IO
                 }
 
                 var partitionIndex = (int) ((ulong) compressionBlock.Offset / TocResource.Header.PartitionSize);
-                var partitionOffset = (long)((ulong)compressionBlock.Offset % TocResource.Header.PartitionSize);
+                var partitionOffset = (long) ((ulong) compressionBlock.Offset % TocResource.Header.PartitionSize);
+
                 if (Owen.IsExporting)
                 {
                     Owen.Reader = this;
@@ -281,7 +280,7 @@ namespace CUE4Parse.UE4.IO
 
                 reader.Position = 0;
             }
-            
+
             return dst;
         }
 

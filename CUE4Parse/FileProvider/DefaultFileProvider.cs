@@ -63,7 +63,6 @@ namespace CUE4Parse.FileProvider
 
         private void RegisterFile(string file, Stream[] stream = null!, Func<string, FArchive>? openContainerStreamFunc = null)
         {
-
             const string config = "config.json";
             if (file.Contains(JsonConvert.DeserializeObject<Config>(File.ReadAllText(config)).BackupFileName)) return;
 

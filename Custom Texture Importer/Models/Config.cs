@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Custom_Texture_Importer.Utils;
 using System.Reflection;
-using Spectre.Console;
 
 namespace Custom_Texture_Importer.Models
 {

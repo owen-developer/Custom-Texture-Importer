@@ -16,7 +16,7 @@ public class FileProvider
     {
         if (!CheckForConnection())
             throw new HttpRequestException("No internet connection");
-        
+
         Provider = new DefaultFileProvider(paks ?? FortniteUtil.PakPath, SearchOption.TopDirectoryOnly, false,
             new VersionContainer(EGame.GAME_UE5_LATEST));
         Provider.Initialize();
@@ -26,11 +26,10 @@ public class FileProvider
         var aes = JsonConvert.DeserializeObject<AES>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult())?.Data;
 
         var keys = new List<KeyValuePair<FGuid, FAesKey>>();
-        if (aes.MainKey != null)
-            keys.Add(new KeyValuePair<FGuid, FAesKey>(new FGuid(), new FAesKey(aes.MainKey)));
+        keys.Add(new KeyValuePair<FGuid, FAesKey>(new FGuid(), new FAesKey("0000000000000000000000000000000000000000000000000000000000000000")));
         keys.AddRange(from x in aes.DynamicKeys
-            select new KeyValuePair<FGuid, FAesKey>(new FGuid(x.PakGuid), new FAesKey(x.Key)));
-        
+                      select new KeyValuePair<FGuid, FAesKey>(new FGuid(x.PakGuid), new FAesKey(x.Key)));
+
         Provider.SubmitKeys(keys);
     }
 
